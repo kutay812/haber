@@ -1,0 +1,13 @@
+.pagination {
+    margin-bottom: 0;
+}
+
+.pagination .page-link {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+.pagination .page-item.active .page-link {
+    z-index: 3;
+}
