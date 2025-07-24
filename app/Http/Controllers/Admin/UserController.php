@@ -17,9 +17,10 @@ class UserController extends Controller
         $this->middleware('permission:users.delete', ['only' => ['destroy']]);
     }
 
+    // Kullanıcıları listele (admin)
     public function index(Request $request)
     {
-        $query = User::query()
+        $users = User::query()
             ->with('roles')
             ->when($request->filled('search'), function($q) use ($request) {
                 $searchTerm = $request->search;
@@ -28,35 +29,36 @@ class UserController extends Controller
                       ->orWhere('email', 'like', "%{$searchTerm}%");
                 });
             })
-            ->orderBy('created_at', 'desc');
+            ->orderBy('created_at', 'desc')
+            ->paginate(10)
+            ->withQueryString();
 
-        $users = $query->paginate(10)->withQueryString();
-        
         return view('admin.users.index', compact('users'));
     }
 
+    // Kullanıcı oluşturma formu (admin)
     public function create()
     {
         $roles = Role::where('name', '!=', 'Super Admin')->get();
         return view('admin.users.create', compact('roles'));
     }
 
+    // Kullanıcı kaydet (admin)
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
-            'roles' => 'required|array'
+            'roles'    => 'required|array'
         ]);
 
         $user = User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
+            'name'     => $validated['name'],
+            'email'    => $validated['email'],
             'password' => bcrypt($validated['password']),
         ]);
 
-        // Rol id'lerini isimlere çevirerek atama!
         $roleNames = Role::whereIn('id', $request->roles)->pluck('name')->toArray();
         $user->assignRole($roleNames);
 
@@ -64,6 +66,7 @@ class UserController extends Controller
             ->with('success', 'Kullanıcı başarıyla oluşturuldu.');
     }
 
+    // Kullanıcı düzenleme formu (admin)
     public function edit(User $user)
     {
         if ($user->hasRole('Super Admin') && !auth()->user()->hasRole('Super Admin')) {
@@ -75,6 +78,7 @@ class UserController extends Controller
         return view('admin.users.edit', compact('user', 'roles'));
     }
 
+    // Kullanıcı güncelle (admin)
     public function update(Request $request, User $user)
     {
         if ($user->hasRole('Super Admin') && !auth()->user()->hasRole('Super Admin')) {
@@ -83,14 +87,14 @@ class UserController extends Controller
         }
 
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|string|email|max:255|unique:users,email,' . $user->id,
             'password' => 'nullable|string|min:8|confirmed',
-            'roles' => 'required|array'
+            'roles'    => 'required|array'
         ]);
 
         $user->update([
-            'name' => $validated['name'],
+            'name'  => $validated['name'],
             'email' => $validated['email'],
         ]);
 
@@ -98,7 +102,6 @@ class UserController extends Controller
             $user->update(['password' => bcrypt($validated['password'])]);
         }
 
-        // Rol id'lerini isimlere çevirerek güncelle!
         $roleNames = Role::whereIn('id', $request->roles)->pluck('name')->toArray();
         $user->syncRoles($roleNames);
 
@@ -106,6 +109,7 @@ class UserController extends Controller
             ->with('success', 'Kullanıcı başarıyla güncellendi.');
     }
 
+    // Kullanıcı sil (admin)
     public function destroy(User $user)
     {
         if ($user->hasRole('Super Admin')) {
@@ -122,40 +126,31 @@ class UserController extends Controller
             ->with('success', 'Kullanıcı başarıyla silindi.');
     }
 
+    // Kullanıcı arama (admin autocomplete/search)
     public function search(Request $request)
     {
-        try {
-            $search = $request->get('search');
-            
-            if (empty($search)) {
-                return response()->json(['items' => []], 200);
-            }
-
-            $items = User::query()
-                ->with('roles')
-                ->where(function($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%")
-                      ->orWhere('email', 'like', "%{$search}%");
-                })
-                ->orderBy('created_at', 'desc')
-                ->limit(5)
-                ->get()
-                ->map(function($user) {
-                    return [
-                        'id' => $user->id,
-                        'text' => $user->name,
-                        'category' => $user->email
-                    ];
-                });
-
-            return response()->json(['items' => $items], 200);
-
-        } catch (\Exception $e) {
-            \Log::error('Kullanıcı arama hatası: ' . $e->getMessage());
-            return response()->json([
-                'error' => true,
-                'message' => 'Arama işlemi sırasında bir hata oluştu'
-            ], 500);
+        $search = $request->get('search');
+        if (empty($search)) {
+            return response()->json(['items' => []], 200);
         }
+
+        $items = User::query()
+            ->with('roles')
+            ->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            })
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get()
+            ->map(function($user) {
+                return [
+                    'id'   => $user->id,
+                    'text' => $user->name,
+                    'category' => $user->email
+                ];
+            });
+
+        return response()->json(['items' => $items], 200);
     }
 }

@@ -69,31 +69,29 @@
                             @enderror
                         </div>
 
-                        <!-- Image -->
+                        <!-- Mevcut Resim (Önizleme) -->
                         <div class="mb-3">
-                            <label for="image_id" class="form-label">Görsel</label>
-                            <select class="form-select @error('image_id') is-invalid @enderror" 
-                                    id="image_id" name="image_id">
-                                <option value="">Görsel Seçin</option>
-                                @foreach($images as $image)
-                                    <option value="{{ $image->id }}" 
-                                            {{ old('image_id', $news->image_id) == $image->id ? 'selected' : '' }}
-                                            data-preview="{{ asset('storage/profile-image/' . $image->path) }}">
-                                        {{ $image->name ?? $image->path }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('image_id')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-
+                            <label class="form-label">Mevcut Görsel</label>
                             <div id="image-preview" class="mt-2">
                                 @if($news->image)
                                     <img src="{{ asset('storage/profile-image/' . $news->image->path) }}" 
                                          alt="Seçili görsel" 
                                          class="img-thumbnail">
+                                @else
+                                    <div class="text-muted">Henüz görsel yok.</div>
                                 @endif
                             </div>
+                        </div>
+
+                        <!-- Yeni Görsel Yükle (Dosya Seç) -->
+                        <div class="mb-3">
+                            <label for="new_image" class="form-label">Yeni Görsel Yükle (İsteğe bağlı)</label>
+                            <input type="file" class="form-control @error('new_image') is-invalid @enderror" 
+                                   id="new_image" name="new_image" accept="image/*">
+                            @error('new_image')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                            <small class="text-muted">Yeni bir resim yüklersen, haberin görseli değişir.</small>
                         </div>
 
                         <!-- Status -->
@@ -132,24 +130,8 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const imageSelect = document.getElementById('image_id');
-    const imagePreview = document.getElementById('image-preview');
     const form = document.querySelector('form');
     const submitBtn = document.getElementById('submitBtn');
-
-    // Image preview functionality
-    if (imageSelect && imagePreview) {
-        imageSelect.addEventListener('change', function() {
-            const selectedOption = this.options[this.selectedIndex];
-            const previewUrl = selectedOption.getAttribute('data-preview');
-
-            if (previewUrl && previewUrl !== '') {
-                imagePreview.innerHTML = `<img src="${previewUrl}" alt="Seçili görsel" class="img-thumbnail" style="max-width: 200px; height: auto;">`;
-            } else {
-                imagePreview.innerHTML = '';
-            }
-        });
-    }
 
     // Form submission handling
     if (form && submitBtn) {
@@ -176,7 +158,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Butonu devre dışı bırak ve loading durumunu göster
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Güncelleniyor...';
-            
+
             // Form gönderimi başarısız olursa butonu tekrar aktif et
             setTimeout(() => {
                 if (submitBtn.disabled) {

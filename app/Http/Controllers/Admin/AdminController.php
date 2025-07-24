@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
 use App\Services\DashboardService;
-use Illuminate\Routing\Controller as BaseController;
 
-class AdminController extends BaseController
+class AdminController extends Controller
 {
     protected $dashboardService;
 

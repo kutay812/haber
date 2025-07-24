@@ -68,25 +68,15 @@
                             @enderror
                         </div>
 
-                        <!-- Image -->
+                        <!-- Yeni Görsel Yükle -->
                         <div class="mb-3">
-                            <label for="image_id" class="form-label">Görsel</label>
-                            <select class="form-select @error('image_id') is-invalid @enderror"
-                                    id="image_id" name="image_id">
-                                <option value="">Görsel Seçin</option>
-                                @foreach($images as $image)
-                                    <option value="{{ $image->id }}"
-                                            {{ old('image_id') == $image->id ? 'selected' : '' }}
-                                            data-preview="{{ asset('storage/profile-image/' . $image->path) }}">
-                                        {{ $image->name ?? $image->path }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('image_id')
+                            <label for="new_image" class="form-label">Görsel Yükle</label>
+                            <input type="file" class="form-control @error('new_image') is-invalid @enderror"
+                                   id="new_image" name="new_image" accept="image/*">
+                            @error('new_image')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
-
-                            <div id="image-preview" class="mt-2"></div>
+                            <small class="text-muted">Yalnızca yeni bir görsel yükleyebilirsiniz.</small>
                         </div>
 
                         <!-- Status -->
@@ -122,33 +112,6 @@
     </div>
 </div>
 
-@push('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const imageSelect = document.getElementById('image_id');
-    const imagePreview = document.getElementById('image-preview');
-
-    imageSelect.addEventListener('change', function() {
-        const selectedOption = this.options[this.selectedIndex];
-        const previewUrl = selectedOption.getAttribute('data-preview');
-
-        if (previewUrl) {
-            imagePreview.innerHTML = `<img src="${previewUrl}" alt="Seçili görsel" class="img-thumbnail">`;
-        } else {
-            imagePreview.innerHTML = '';
-        }
-    });
-
-    // Eğer eski seçili varsa preview'ı otomatik göster
-    const initialSelected = imageSelect.options[imageSelect.selectedIndex];
-    const initialPreview = initialSelected.getAttribute('data-preview');
-    if(initialPreview) {
-        imagePreview.innerHTML = `<img src="${initialPreview}" alt="Seçili görsel" class="img-thumbnail">`;
-    }
-});
-</script>
-@endpush
-
 <style>
 .form-select {
     background-color: #fff;
@@ -159,10 +122,6 @@ document.addEventListener('DOMContentLoaded', function() {
 .form-select:focus {
     border-color: #bac8f3;
     box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
-}
-#image-preview img {
-    max-width: 100%;
-    height: auto;
 }
 .btn-secondary {
     color: #fff;

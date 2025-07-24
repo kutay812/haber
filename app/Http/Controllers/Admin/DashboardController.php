@@ -9,14 +9,15 @@ use App\Models\User;
 
 class DashboardController extends Controller
 {
+    // Admin paneli ana sayfa - istatistikler
     public function index()
     {
         $stats = [
-            'news_count' => News::count(),
+            'news_count'     => News::count(),
             'category_count' => Category::count(),
-            'user_count' => User::count(),
+            'user_count'     => User::count(),
         ];
 
         return view('admin.dashboard', compact('stats'));
     }
-} 
+}

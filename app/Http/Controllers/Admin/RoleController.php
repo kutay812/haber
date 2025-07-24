@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
 use App\Services\RoleService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -12,28 +13,22 @@ class RoleController extends Controller
 
     public function __construct(RoleService $roleService)
     {
+        $this->middleware('auth'); // veya uygun admin yetki middleware'i
         $this->roleService = $roleService;
     }
 
-    /**
-     * Get all roles
-     */
     public function get_roles(): JsonResponse
     {
         $roles = $this->roleService->getAllRoles();
         return response()->json(['roles' => $roles], 200);
     }
 
-    /**
-     * Update user role
-     */
     public function update_user_role(Request $request): JsonResponse
     {
         $request->validate([
             'user_id' => 'required|integer|exists:users,id',
             'role' => 'required|string|exists:roles,name'
         ]);
-
         try {
             $user = $this->roleService->assignRoleToUser($request->user_id, $request->role);
             return response()->json([
@@ -49,16 +44,12 @@ class RoleController extends Controller
         }
     }
 
-    /**
-     * Remove role from user
-     */
     public function remove_user_role(Request $request): JsonResponse
     {
         $request->validate([
             'user_id' => 'required|integer|exists:users,id',
             'role' => 'required|string|exists:roles,name'
         ]);
-
         try {
             $user = $this->roleService->removeRoleFromUser($request->user_id, $request->role);
             return response()->json([
@@ -74,15 +65,11 @@ class RoleController extends Controller
         }
     }
 
-    /**
-     * Get user roles
-     */
     public function get_user_roles(Request $request): JsonResponse
     {
         $request->validate([
             'user_id' => 'required|integer|exists:users,id'
         ]);
-
         try {
             $data = $this->roleService->getUserRoles($request->user_id);
             return response()->json($data, 200);
