@@ -88,8 +88,8 @@
                 </div>
                 <div class="card-body text-center">
                     @if($user->profile_image)
-                        <img src="{{ asset('storage/profile-image/' . $user->profile_image) }}" 
-                             alt="{{ $user->name }}" 
+                        <img src="{{ $user->profile_image_url }}"
+                             alt="{{ $user->name }}"
                              class="img-profile rounded-circle mb-3"
                              style="width: 150px; height: 150px; object-fit: cover;">
                     @else
@@ -120,4 +120,4 @@ document.querySelector('.custom-file-input').addEventListener('change', function
 });
 </script>
 @endpush
-@endsection 
+@endsection

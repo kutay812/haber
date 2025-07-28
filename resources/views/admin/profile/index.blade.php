@@ -37,7 +37,7 @@
                                 <div class="text-center mb-3">
                                     <div class="profile-image-wrapper mb-3">
                                         <img id="profile-preview"
-                                             src="{{ auth()->user()->profile_image ? asset('storage/profile-image/' . auth()->user()->profile_image) : 'https://ui-avatars.com/api/?name=' . urlencode(auth()->user()->name) }}"
+                                             src="{{ auth()->user()->profile_image_url }}"
                                              class="rounded-circle profile-image"
                                              alt="Profil Resmi">
                                     </div>

@@ -3,8 +3,7 @@
     <!-- User Profile -->
     <div class="sidebar-profile">
         <div class="profile-image">
-            <img src="{{ auth()->user()->profile_image ? asset('storage/profile-image/' . auth()->user()->profile_image) : 'https://ui-avatars.com/api/?name=' . urlencode(auth()->user()->name) }}" 
-                 alt="Profil Resmi">
+            <img src="{{ auth()->user()->profile_image_url }}" alt="Profil Resmi">
         </div>
         <div class="profile-info">
             <div class="profile-name">{{ auth()->user()->name }}</div>

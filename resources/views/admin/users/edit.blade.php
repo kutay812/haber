@@ -37,6 +37,14 @@
                 </div>
             @endif
 
+            {{-- Profil Fotoğrafı (isteğe bağlı, modern panellerde önerilir) --}}
+            <div class="mb-3 text-center">
+                <img src="{{ $user->profile_image_url }}" 
+                     alt="{{ $user->name }}" 
+                     class="rounded-circle shadow" 
+                     style="width: 90px; height: 90px; object-fit: cover;">
+            </div>
+
             <form action="{{ route('admin.users.update', $user->id) }}" method="POST">
                 @csrf
                 @method('PUT')
@@ -45,21 +53,30 @@
                     <div class="col-md-6">
                         <div class="form-group">
                             <label for="name">Ad Soyad</label>
-                            <input type="text" class="form-control" id="name" name="name" value="{{ old('name', $user->name) }}" required>
+                            <input type="text" class="form-control @error('name') is-invalid @enderror" id="name" name="name" value="{{ old('name', $user->name) }}" required>
+                            @error('name')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
                             <label for="email">E-posta</label>
-                            <input type="email" class="form-control" id="email" name="email" value="{{ old('email', $user->email) }}" required>
+                            <input type="email" class="form-control @error('email') is-invalid @enderror" id="email" name="email" value="{{ old('email', $user->email) }}" required>
+                            @error('email')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label for="password">Yeni Şifre</label>
-                    <input type="password" class="form-control" id="password" name="password" placeholder="Şifreyi değiştirmek için doldurun">
+                    <input type="password" class="form-control @error('password') is-invalid @enderror" id="password" name="password" placeholder="Şifreyi değiştirmek için doldurun">
                     <small class="form-text text-muted">Şifreyi değiştirmek istemiyorsanız boş bırakın.</small>
+                    @error('password')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
                 </div>
 
                 <div class="form-group">
@@ -77,10 +94,10 @@
                             @foreach($roles as $role)
                                 <div class="col-md-4">
                                     <div class="custom-control custom-checkbox">
-                                        <input type="checkbox" 
-                                               class="custom-control-input" 
-                                               id="role_{{ $role->id }}" 
-                                               name="roles[]" 
+                                        <input type="checkbox"
+                                               class="custom-control-input"
+                                               id="role_{{ $role->id }}"
+                                               name="roles[]"
                                                value="{{ $role->id }}"
                                                {{ (old('roles') && in_array($role->id, old('roles'))) || $user->hasRole($role->name) ? 'checked' : '' }}
                                                {{ $role->name === 'Super Admin' && !auth()->user()->hasRole('Super Admin') ? 'disabled' : '' }}
@@ -104,8 +121,8 @@
                     </button>
 
                     @if(auth()->user()->hasRole('Super Admin') && auth()->id() !== $user->id)
-                        <button type="button" 
-                                class="btn btn-danger float-right" 
+                        <button type="button"
+                                class="btn btn-danger float-right"
                                 onclick="deleteUser({{ $user->id }})">
                             <i class="fas fa-trash"></i> Kullanıcıyı Sil
                         </button>
@@ -132,4 +149,4 @@
     </script>
     @endpush
 @endif
-@endsection 
+@endsection

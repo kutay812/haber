@@ -52,23 +52,29 @@ class User extends Authenticatable
         return $this->hasMany(News::class);
     }
 
+    /**
+     * Accessor: Profil resmi yolunu döndürür.
+     * Veritabanında profile_image her zaman "profile-image/abc.jpg" formatında saklanmalı!
+     */
     public function getProfileImageUrlAttribute()
     {
-        // Eğer kullanıcı bir resim yüklemişse onu döndür
         if ($this->profile_image) {
-            return asset('storage/profile-image/' . $this->profile_image);
+            // DOĞRU YOL: asset('storage/' . $this->profile_image)
+            return asset('storage/' . $this->profile_image);
         }
         // Yoksa default profil resmi döndür
         return asset('storage/adminlte/dist/img/user2-160x160.jpg');
     }
-    protected static function booted()
-{
-    static::created(function ($user) {
-        // Eğer kullanıcıya rol atanmamışsa User rolü ver
-        if (!$user->roles()->count()) {
-            $user->assignRole('User');
-        }
-    });
-}
 
+    /**
+     * Otomatik User rolü ataması (isteğe bağlı)
+     */
+    protected static function booted()
+    {
+        static::created(function ($user) {
+            if (!$user->roles()->count()) {
+                $user->assignRole('User');
+            }
+        });
+    }
 }

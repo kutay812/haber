@@ -49,21 +49,22 @@ class ProfileController extends Controller
 
         // Profil resmi yüklenmişse işle
         if ($request->hasFile('profile_image')) {
-            if ($user->profile_image && Storage::disk('public')->exists('profile-image/' . $user->profile_image)) {
-                Storage::disk('public')->delete('profile-image/' . $user->profile_image);
+            // Eski resmi sil (profile-image/xxx.jpg formatı!)
+            if ($user->profile_image && Storage::disk('public')->exists($user->profile_image)) {
+                Storage::disk('public')->delete($user->profile_image);
             }
-            $file = $request->file('profile_image');
-            $filename = time() . '_' . $file->getClientOriginalName();
-            $file->storeAs('profile-image', $filename, 'public');
-            $user->profile_image = $filename;
+            // Yeni resmi "profile-image/" klasörüne kaydet ve tam path olarak ata
+            $path = $request->file('profile_image')->store('profile-image', 'public');
+            $user->profile_image = $path;
         }
 
         // Diğer alanlar
         $user->name = $request->name;
         $user->email = $request->email;
 
+        // E-posta değiştiyse doğrulama sıfırlansın
         if ($user->isDirty('email')) {
-            $user->email_verified_at = null; // Opsiyonel: e-posta değişirse doğrulama sıfırlansın
+            $user->email_verified_at = null;
         }
 
         $user->save();
