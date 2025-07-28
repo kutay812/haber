@@ -12,11 +12,6 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable, HasRoles;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'name',
         'email',
@@ -24,51 +19,38 @@ class User extends Authenticatable
         'profile_image',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var array<int, string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
 
-    /**
-     * Get the news created by the user.
-     */
+    // HABERLER: Kullanıcının oluşturduğu haberler
     public function news()
     {
         return $this->hasMany(News::class);
     }
 
-    /**
-     * Accessor: Profil resmi yolunu döndürür.
-     * Veritabanında profile_image her zaman "profile-image/abc.jpg" formatında saklanmalı!
-     */
+    // YORUMLAR: Kullanıcının yaptığı yorumlar
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
+    }
+
+    // Profil resmi yolunu döndürür
     public function getProfileImageUrlAttribute()
     {
         if ($this->profile_image) {
-            // DOĞRU YOL: asset('storage/' . $this->profile_image)
             return asset('storage/' . $this->profile_image);
         }
-        // Yoksa default profil resmi döndür
         return asset('storage/adminlte/dist/img/user2-160x160.jpg');
     }
 
-    /**
-     * Otomatik User rolü ataması (isteğe bağlı)
-     */
+    // Otomatik User rolü ataması
     protected static function booted()
     {
         static::created(function ($user) {

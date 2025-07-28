@@ -10,7 +10,7 @@ class News extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $table = 'news'; // tablo adını elle belirtebilirsin, opsiyonel
+    protected $table = 'news';
 
     protected $fillable = [
         'title',
@@ -33,7 +33,6 @@ class News extends Model
         'created_at'   => 'datetime',
         'updated_at'   => 'datetime',
         'deleted_at'   => 'datetime',
-        // 'published_at' => 'datetime', // eğer yayınlanma tarihi varsa ekle
     ];
 
     // HABER > KATEGORİ ilişkisi
@@ -54,7 +53,13 @@ class News extends Model
         return $this->belongsTo(Image::class, 'image_id');
     }
 
-    // Eğer haber aktif değilse query'de hariç tutmak için (scope örneği)
+    // HABER > YORUMLAR ilişkisi
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
+    }
+
+    // Scope: yalnızca aktif haberleri getir
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
