@@ -10,21 +10,16 @@ class Image extends Model
 {
     use HasFactory, SoftDeletes;
 
-    // Eğer tablo adı Laravel'in varsayılan isimlendirme kurallarına uyuyorsa bu satıra gerek yok
     protected $table = 'images';
 
-    // Toplu atama (mass assignment) için izin verilen alanlar
     protected $fillable = [
         'name',
         'path',
     ];
 
-    /**
-     * Bir resim birden fazla haberle ilişkili olabilir.
-     * Eğer resim birden fazla haberle ilişkilendiriliyorsa belongsToMany kullanılır.
-     */
+    // Haber ile ilişki (şu an hasMany, aslında çoğunlukla One-to-One gibi kullanıyorsun)
     public function news()
     {
-        return $this->belongsToMany(News::class);
+        return $this->hasMany(\App\Models\News::class, 'image_id');
     }
 }

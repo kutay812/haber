@@ -95,8 +95,10 @@
             </a>
 
             <div class="card night-card mb-4">
+                {{-- Haber Resmi --}}
                 @if($haber->image && $haber->image->path)
-                    <img src="{{ asset('storage/' . $haber->image->path) }}" class="card-img-top" alt="{{ $haber->title }}">
+                    <img src="{{ asset('storage/' . $haber->image->path) }}?v={{ $haber->image->updated_at->timestamp ?? time() }}"
+                         class="card-img-top" alt="{{ $haber->title }}">
                 @endif
                 <div class="card-body pb-4 pt-4">
                     <h1 class="night-title">{{ $haber->title }}</h1>
@@ -112,6 +114,7 @@
                 </div>
             </div>
 
+            {{-- Haber Düzenleme Formu (Yetkililer için) --}}
             @if(auth()->check() && auth()->user()->hasAnyRole(['Admin', 'Editor', 'Super Admin']))
                 <div class="edit-form-container">
                     <h4 class="mb-3">Haberi Düzenle</h4>
@@ -123,8 +126,22 @@
                             <input type="text" name="title" class="form-control" value="{{ old('title', $haber->title) }}" required>
                         </div>
                         <div class="mb-3">
+                            <label for="description">Açıklama</label>
+                            <input type="text" name="description" class="form-control" value="{{ old('description', $haber->description) }}" required>
+                        </div>
+                        <div class="mb-3">
                             <label for="content">İçerik</label>
                             <textarea name="content" class="form-control" rows="6" required>{{ old('content', $haber->content) }}</textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="category_id">Kategori</label>
+                            <select name="category_id" class="form-control" required>
+                                @foreach(\App\Models\Category::all() as $category)
+                                    <option value="{{ $category->id }}" @if($haber->category_id == $category->id) selected @endif>
+                                        {{ $category->name }}
+                                    </option>
+                                @endforeach
+                            </select>
                         </div>
                         <div class="mb-3">
                             <label for="image">Yeni Görsel (isteğe bağlı)</label>
@@ -135,6 +152,7 @@
                 </div>
             @endif
 
+            {{-- Yorumlar --}}
             <div class="edit-form-container mt-5">
                 <h4 class="mb-3">Yorumlar</h4>
 

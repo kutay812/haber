@@ -21,6 +21,7 @@ use App\Http\Controllers\CommentController; // <-- Yorum controller'ı
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/kategori/{slug}', [HomeController::class, 'index'])->name('category.news');
 Route::get('/haber/{slug}', [HomeController::class, 'show'])->name('news.show');
+Route::post('/haber-ekle', [HomeController::class, 'store'])->name('news.store');
 
 // HABER GÜNCELLEME (Yalnızca User olmayan Auth kullanıcılar için)
 Route::put('/haber/{id}', [HomeController::class, 'update'])->name('news.update')->middleware(['auth']);
