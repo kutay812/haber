@@ -1,219 +1,274 @@
 @extends('layouts.app')
+
+@section('title', $news->title)
+@section('meta_description', Str::limit(strip_tags($news->description ?? $news->content), 150))
+
+@section('structured_data')
+<script type="application/ld+json">
+{
+  "@@context": "https://schema.org",
+  "@@type": "NewsArticle",
+  "headline": "{{ str_replace('"', '\"', $news->title) }}",
+  "image": [
+    "{{ $news->image_url }}"
+   ],
+  "datePublished": "{{ $news->created_at->toIso8601String() }}",
+  "dateModified": "{{ $news->updated_at->toIso8601String() }}",
+  "author": [{
+      "@@type": "Person",
+      "name": "Haber Portal"
+  }]
+}
+</script>
+@endsection
+
 @section('content')
-<style>
-    body {
-        background: #181f2a !important;
-        color: #f1f5fa !important;
-    }
-    .night-card {
-        background: #232d3b;
-        border-radius: 1.5rem;
-        box-shadow: 0 8px 32px rgba(20,30,45,0.33);
-        border: none;
-        margin-top: 32px;
-        color: #f1f5fa;
-    }
-    .night-card .card-img-top {
-        border-top-left-radius: 1.5rem;
-        border-top-right-radius: 1.5rem;
-        max-height: 380px;
-        object-fit: cover;
-        box-shadow: 0 2px 12px #2563eb20;
-    }
-    .night-title {
-        font-size: 2.3rem;
-        font-weight: 700;
-        color: #fff;
-        letter-spacing: .5px;
-        margin-bottom: 0.5rem;
-    }
-    .night-meta {
-        color: #94a3b8;
-        font-size: 0.98rem;
-        margin-bottom: 1rem;
-    }
-    .night-content {
-        color: #c9d6e8;
-        font-size: 1.18rem;
-        line-height: 1.7;
-    }
-    .night-badge {
-        background: linear-gradient(90deg, #2563eb, #3576f6);
-        color: #fff;
-        font-weight: 500;
-        border-radius: 2rem;
-        padding: 0.2em 1em;
-        font-size: 1rem;
-        margin-right: 0.5em;
-    }
-    .night-back {
-        display: inline-block;
-        background: linear-gradient(90deg, #2563eb, #3576f6);
-        color: #fff !important;
-        font-weight: 500;
-        border-radius: 2rem;
-        padding: 0.55em 1.6em;
-        font-size: 1rem;
-        margin-bottom: 20px;
-        box-shadow: 0 2px 10px #2563eb20;
-        border: none;
-        text-decoration: none !important;
-        transition: background 0.18s;
-    }
-    .night-back i {
-        margin-right: 8px;
-    }
-    .night-back:hover {
-        background: #1a2a50;
-        color: #fff !important;
-        text-decoration: none;
-    }
-    .edit-form-container {
-        background: #1e2735;
-        padding: 2rem;
-        border-radius: 1rem;
-        box-shadow: 0 4px 20px #00000022;
-        margin-top: 2rem;
-    }
-    .edit-form-container label {
-        color: #cbd5e1;
-        margin-bottom: .3rem;
-    }
-    .edit-form-container input,
-    .edit-form-container textarea {
-        background: #181f2a;
-        border: 1px solid #3576f6;
-        color: #fff;
-    }
-</style>
+<main class="max-w-[1280px] mx-auto px-[20px] py-8">
+    
+    <!-- Breadcrumb -->
+    <nav aria-label="Breadcrumb" class="flex text-on-surface-variant font-meta-data text-meta-data mb-6">
+        <ol class="inline-flex items-center flex-wrap gap-y-1">
+            <li class="inline-flex items-center hover:text-primary transition-colors cursor-pointer"><a href="{{ route('home') }}">Ana Sayfa</a></li>
+            <li><span class="mx-1 md:mx-2 material-symbols-outlined text-[14px]">chevron_right</span></li>
+            @if($news->categories && $news->categories->count() > 0)
+                @foreach($news->categories as $index => $cat)
+                    <li class="inline-flex items-center hover:text-primary transition-colors cursor-pointer"><a href="{{ route('category.news', $cat->slug) }}">{{ $cat->name }}</a></li>
+                    <li><span class="mx-1 md:mx-2 material-symbols-outlined text-[14px]">chevron_right</span></li>
+                @endforeach
+            @elseif($news->category)
+                <li class="inline-flex items-center hover:text-primary transition-colors cursor-pointer"><a href="{{ route('category.news', $news->category->slug) }}">{{ $news->category->name }}</a></li>
+                <li><span class="mx-1 md:mx-2 material-symbols-outlined text-[14px]">chevron_right</span></li>
+            @endif
+            <li aria-current="page" class="inline-flex items-center font-bold text-on-surface cursor-default truncate max-w-[150px] sm:max-w-[300px]">{{ $news->title }}</li>
+        </ol>
+    </nav>
 
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-lg-8 col-md-10">
-            <a href="{{ route('home') }}" class="night-back mb-3">
-                <i class="fa fa-arrow-left"></i> Ana Sayfaya Dön
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <!-- Left Column: Social Share (Desktop) -->
+        <aside class="hidden lg:flex lg:col-span-1 flex-col gap-4 sticky top-32 h-fit items-center">
+            <div class="text-outline font-label-caps text-label-caps mb-2 origin-left rotate-[-90deg] whitespace-nowrap mt-12">PAYLAŞ</div>
+            <a href="https://api.whatsapp.com/send?text={{ urlencode($news->title . ' ' . request()->url()) }}" target="_blank" class="w-10 h-10 rounded-full bg-[#25D366] text-white flex items-center justify-center hover:opacity-80 transition-opacity" title="WhatsApp">
+                <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">chat</span>
             </a>
+            <a href="https://twitter.com/intent/tweet?url={{ urlencode(request()->url()) }}&text={{ urlencode($news->title) }}" target="_blank" class="w-10 h-10 rounded-full bg-[#1DA1F2] text-white flex items-center justify-center hover:opacity-80 transition-opacity" title="Twitter">
+                <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">share</span>
+            </a>
+            <a href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode(request()->url()) }}" target="_blank" class="w-10 h-10 rounded-full bg-[#4267B2] text-white flex items-center justify-center hover:opacity-80 transition-opacity" title="Facebook">
+                <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">thumb_up</span>
+            </a>
+            <div class="h-12 w-[1px] bg-outline-variant my-2"></div>
+            <a href="#comments" class="w-10 h-10 rounded-full border border-outline-variant text-on-surface flex items-center justify-center hover:bg-surface-variant transition-colors" title="Yorumlar">
+                <span class="material-symbols-outlined">forum</span>
+            </a>
+        </aside>
 
-            <div class="card night-card mb-4">
-                {{-- Haber Resmi --}}
-                @if($haber->image && $haber->image->path)
-                    <img src="{{ asset('storage/' . $haber->image->path) }}?v={{ $haber->image->updated_at->timestamp ?? time() }}"
-                         class="card-img-top" alt="{{ $haber->title }}">
+        <!-- Center Column: Article Content -->
+        <article class="col-span-1 lg:col-span-8">
+            
+            @if($news->category)
+            <!-- Category Chip -->
+            <div class="inline-block bg-primary text-on-primary px-3 py-1 font-label-caps text-label-caps rounded-sm mb-4">
+                {{ mb_strtoupper($news->category->name) }}
+            </div>
+            @endif
+
+            <!-- Headline -->
+            <h1 class="font-display-hero-mobile md:font-display-hero text-display-hero-mobile md:text-display-hero text-on-surface mb-4 leading-tight">
+                {{ $news->title }}
+            </h1>
+
+            <!-- Subtitle (Description) -->
+            @if($news->description)
+            <p class="font-body-lg text-body-lg text-on-surface-variant italic mb-6 border-l-4 border-secondary pl-4">
+                {{ $news->description }}
+            </p>
+            @endif
+
+            <!-- Meta Data -->
+            <div class="flex flex-wrap items-center gap-4 text-on-surface-variant font-meta-data text-meta-data mb-8 pb-4 border-b border-outline-variant">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined">newspaper</span>
+                    @if($news->newsSource)
+                        <a href="{{ $news->source_url }}" target="_blank" rel="noopener noreferrer" class="font-bold text-on-surface hover:text-secondary transition-colors">
+                            {{ $news->newsSource->name }}
+                        </a>
+                        <span class="text-outline font-meta-data text-[11px] bg-surface-container px-2 py-0.5 rounded-full border border-outline-variant">RSS</span>
+                    @else
+                        <span class="font-bold text-on-surface">Haber Portal</span>
+                    @endif
+                </div>
+                <span class="hidden sm:inline text-outline">•</span>
+                <div class="flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[16px]">calendar_today</span>
+                    <span>{{ $news->created_at->translatedFormat('d F Y, H:i') }}</span>
+                </div>
+                @if($news->reading_time)
+                <span class="hidden sm:inline text-outline">•</span>
+                <div class="flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[16px]">timer</span>
+                    <span>{{ $news->reading_time }} dk okuma süresi</span>
+                </div>
                 @endif
-                <div class="card-body pb-4 pt-4">
-                    <h1 class="night-title">{{ $haber->title }}</h1>
-                    <div class="night-meta mb-3">
-                        <span class="night-badge"><i class="fa fa-tag"></i> {{ $haber->category->name ?? '-' }}</span>
-                        <span class="ms-2"><i class="fa fa-user"></i> {{ $haber->user->name ?? '-' }}</span>
-                        <span class="ms-3"><i class="fa fa-calendar"></i> {{ $haber->created_at->format('d.m.Y H:i') }}</span>
-                        <span class="ms-3"><i class="fa fa-eye"></i> {{ $haber->views }}</span>
-                    </div>
-                    <div class="night-content">
-                        {!! nl2br(e($haber->content)) !!}
-                    </div>
+                <div class="flex items-center gap-1 ml-auto">
+                    <span class="material-symbols-outlined text-[16px]">visibility</span>
+                    <span>{{ $news->views_count ?? 0 }} Okunma</span>
                 </div>
             </div>
 
-            {{-- Haber Düzenleme Formu (Yetkililer için) --}}
-            @if(auth()->check() && auth()->user()->hasAnyRole(['Admin', 'Editor', 'Super Admin']))
-                <div class="edit-form-container">
-                    <h4 class="mb-3">Haberi Düzenle</h4>
-                    <form action="{{ route('news.update', $haber->id) }}" method="POST" enctype="multipart/form-data">
-                        @csrf
-                        @method('PUT')
-                        <div class="mb-3">
-                            <label for="title">Başlık</label>
-                            <input type="text" name="title" class="form-control" value="{{ old('title', $haber->title) }}" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="description">Açıklama</label>
-                            <input type="text" name="description" class="form-control" value="{{ old('description', $haber->description) }}" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="content">İçerik</label>
-                            <textarea name="content" class="form-control" rows="6" required>{{ old('content', $haber->content) }}</textarea>
-                        </div>
-                        <div class="mb-3">
-                            <label for="category_id">Kategori</label>
-                            <select name="category_id" class="form-control" required>
-                                @foreach(\App\Models\Category::all() as $category)
-                                    <option value="{{ $category->id }}" @if($haber->category_id == $category->id) selected @endif>
-                                        {{ $category->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label for="image">Yeni Görsel (isteğe bağlı)</label>
-                            <input type="file" name="image" class="form-control">
-                        </div>
-                        <button type="submit" class="btn btn-warning">Güncelle</button>
-                    </form>
-                </div>
-            @endif
+            <!-- Featured Image -->
+            <figure class="mb-8 w-full">
+                <img class="w-full aspect-[16/9] object-cover border border-outline-variant rounded-sm" loading="lazy" src="{{ $news->image_url }}" alt="{{ $news->title }}">
+            </figure>
 
-            {{-- Yorumlar --}}
-            <div class="edit-form-container mt-5">
-                <h4 class="mb-3">Yorumlar</h4>
+            <!-- Mobile Social Share -->
+            <div class="flex lg:hidden gap-4 mb-8 justify-center border-b border-outline-variant pb-6">
+                <a href="https://api.whatsapp.com/send?text={{ urlencode($news->title . ' ' . request()->url()) }}" target="_blank" class="w-10 h-10 rounded-full bg-[#25D366] text-white flex items-center justify-center">
+                    <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">chat</span>
+                </a>
+                <a href="https://twitter.com/intent/tweet?url={{ urlencode(request()->url()) }}&text={{ urlencode($news->title) }}" target="_blank" class="w-10 h-10 rounded-full bg-[#1DA1F2] text-white flex items-center justify-center">
+                    <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">share</span>
+                </a>
+                <a href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode(request()->url()) }}" target="_blank" class="w-10 h-10 rounded-full bg-[#4267B2] text-white flex items-center justify-center">
+                    <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">thumb_up</span>
+                </a>
+            </div>
 
-                @foreach($haber->comments as $comment)
-                    <div class="mb-3 p-3 rounded" style="background:#2e3a4d;">
-                        <strong>{{ $comment->user->name }}</strong>
-                        <small class="text-muted ms-2">{{ $comment->created_at->format('d.m.Y H:i') }}</small>
-                        <div class="mt-1" id="comment-text-{{ $comment->id }}">{{ $comment->content }}</div>
+            <!-- Body Text -->
+            <div class="font-body-md md:font-body-lg text-body-md md:text-body-lg text-on-surface space-y-6 prose prose-lg max-w-none prose-headings:font-headline-md prose-headings:text-primary prose-a:text-secondary hover:prose-a:text-primary transition-colors">
+                {!! $news->content !!}
+            </div>
 
-                        @auth
-                            @php
-                                $user = auth()->user();
-                                $canModify = $user->hasAnyRole(['Admin', 'Editor', 'Super Admin']) || $user->id === $comment->user_id;
-                            @endphp
-
-                            @if($canModify)
-                                <div class="mt-2">
-                                    <button class="btn btn-sm btn-outline-light" onclick="toggleEdit({{ $comment->id }})">Düzenle</button>
-
-                                    <form action="{{ route('comments.destroy', $comment->id) }}" method="POST" style="display:inline-block;" onsubmit="return confirm('Yorumu silmek istediğinize emin misiniz?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-danger">Sil</button>
-                                    </form>
-                                </div>
-
-                                <form action="{{ route('comments.update', $comment->id) }}" method="POST" id="edit-form-{{ $comment->id }}" style="display:none;" class="mt-3">
-                                    @csrf
-                                    @method('PUT')
-                                    <textarea name="content" class="form-control mb-2" rows="3">{{ $comment->content }}</textarea>
-                                    <button type="submit" class="btn btn-sm btn-success">Kaydet</button>
-                                    <button type="button" class="btn btn-sm btn-secondary" onclick="toggleEdit({{ $comment->id }})">İptal</button>
-                                </form>
-                            @endif
-                        @endauth
-                    </div>
+            <!-- Tags -->
+            @if($news->tags && count($news->tags) > 0)
+            <div class="mt-12 flex flex-wrap gap-2">
+                <span class="font-label-caps text-label-caps text-outline mb-2 w-full">ETİKETLER:</span>
+                @foreach($news->tags as $tag)
+                <a href="{{ route('home', ['tag' => $tag->name]) }}" class="bg-surface-container hover:bg-surface-variant px-3 py-1.5 rounded-sm font-meta-data text-meta-data text-on-surface transition-colors border border-outline-variant">
+                    #{{ $tag->name }}
+                </a>
                 @endforeach
+            </div>
+            @endif
+        </article>
 
+        <!-- Yorumlar Bölümü -->
+        <section class="col-span-1 lg:col-span-6 mt-12 pt-8 border-t-[3px] border-primary">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="font-headline-md text-headline-md text-primary uppercase">Yorumlar ({{ $news->comments->count() }})</h2>
+            </div>
+
+            <!-- Yorum Formu -->
+            <div class="bg-surface-container p-6 mb-8 border border-outline-variant rounded-sm">
                 @auth
-                <form action="{{ route('comments.store', $haber->id) }}" method="POST">
-                    @csrf
-                    <div class="mb-3">
-                        <label for="content">Yorumunuz</label>
-                        <textarea name="content" class="form-control" rows="3" required></textarea>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Yorum Yap</button>
-                </form>
+                    <form action="{{ route('comments.store', $news->id) }}" method="POST" class="flex flex-col gap-4">
+                        @csrf
+                        <div>
+                            <label for="content" class="sr-only">Yorumunuz</label>
+                            <textarea name="content" id="content" rows="4" class="w-full px-4 py-3 bg-surface border border-outline text-on-surface focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary transition-colors font-body-md" placeholder="Habere dair düşüncelerinizi paylaşın..." required></textarea>
+                        </div>
+                        <div class="flex justify-end">
+                            <button type="submit" class="bg-primary hover:bg-primary-hover text-on-primary font-label-large text-label-large py-2.5 px-6 rounded-sm transition-colors uppercase tracking-wider">
+                                Yorum Gönder
+                            </button>
+                        </div>
+                    </form>
                 @else
-                    <div class="alert alert-warning mt-3">
-                        Yorum yapabilmek için <a href="{{ route('login.form') }}" class="text-info">giriş yapın</a>.
+                    <div class="text-center py-6">
+                        <p class="font-body-lg text-body-lg text-on-surface-variant mb-4">Yorum yapabilmek için üye girişi yapmalısınız.</p>
+                        <div class="flex justify-center gap-4">
+                            <a href="{{ route('login') }}" class="bg-primary hover:bg-primary-hover text-on-primary font-label-large text-label-large py-2 px-6 rounded-sm transition-colors uppercase">Giriş Yap</a>
+                            <a href="{{ route('register') }}" class="border border-primary text-primary hover:bg-primary hover:text-on-primary font-label-large text-label-large py-2 px-6 rounded-sm transition-colors uppercase">Kayıt Ol</a>
+                        </div>
                     </div>
                 @endauth
             </div>
-        </div>
-    </div>
-</div>
 
-<script>
-function toggleEdit(id) {
-    const form = document.getElementById('edit-form-' + id);
-    form.style.display = (form.style.display === 'none') ? 'block' : 'none';
-}
-</script>
+            <!-- Yorum Listesi -->
+            <div class="space-y-6">
+                @forelse($news->comments as $comment)
+                    <div class="flex gap-4 p-5 bg-surface border border-outline-variant hover:border-secondary transition-colors">
+                        <div class="flex-shrink-0">
+                            <div class="w-12 h-12 bg-primary-container text-on-primary-container rounded-full flex items-center justify-center font-headline-sm uppercase font-bold">
+                                {{ mb_substr($comment->user->name, 0, 1) }}
+                            </div>
+                        </div>
+                        <div class="flex-grow">
+                            <div class="flex justify-between items-baseline mb-2">
+                                <h4 class="font-headline-sm text-headline-sm text-on-surface">{{ $comment->user->name }}</h4>
+                                <span class="font-meta-data text-[12px] text-outline">{{ $comment->created_at->diffForHumans() }}</span>
+                            </div>
+                            <p class="font-body-md text-body-md text-on-surface-variant whitespace-pre-wrap">{{ $comment->content }}</p>
+                        </div>
+                    </div>
+                @empty
+                    <div class="text-center py-12 bg-surface-container border border-outline-variant border-dashed">
+                        <p class="font-body-lg text-body-lg text-on-surface-variant">İlk yorumu siz yapın!</p>
+                    </div>
+                @endforelse
+            </div>
+        </section>
+
+        <!-- Right Column: Sidebar -->
+        <aside class="col-span-1 lg:col-span-3 space-y-8">
+            <!-- Trending List -->
+            @if(isset($mostRead) && count($mostRead) > 0)
+            <div class="bg-surface p-4 border border-outline-variant">
+                <div class="flex items-center gap-2 mb-4 border-b border-primary pb-2">
+                    <span class="w-2 h-2 bg-secondary rounded-full"></span>
+                    <h2 class="font-headline-sm text-headline-sm text-primary uppercase">Çok Okunanlar</h2>
+                </div>
+                <ul class="space-y-4">
+                    @foreach($mostRead->take(5) as $index => $item)
+                    <li class="flex gap-4 items-start group cursor-pointer {{ $index > 0 ? 'border-t border-surface-container-high pt-4' : '' }}">
+                        <span class="font-display-hero text-display-hero text-surface-dim group-hover:text-secondary transition-colors leading-none -mt-1">{{ $index + 1 }}</span>
+                        <div>
+                            <a href="{{ route('news.show', $item->slug) }}">
+                                <h4 class="font-headline-sm text-headline-sm text-on-surface group-hover:text-primary transition-colors leading-snug">{{ $item->title }}</h4>
+                            </a>
+                        </div>
+                    </li>
+                    @endforeach
+                </ul>
+            </div>
+            @endif
+
+            <!-- Newsletter Signup -->
+            <div class="bg-primary text-on-primary p-6 rounded-sm">
+                <h3 class="font-headline-sm text-headline-sm mb-2">Gündemi Yakalayın</h3>
+                <p class="font-meta-data text-meta-data text-on-primary-container mb-4">En önemli haberler her sabah e-postanızda.</p>
+                <form class="flex flex-col gap-2">
+                    <input class="px-3 py-2 text-on-surface bg-surface rounded-sm font-meta-data focus:outline-none focus:ring-2 focus:ring-secondary border-none" placeholder="E-posta adresiniz" type="email"/>
+                    <button class="bg-secondary text-white font-label-caps text-label-caps py-2 rounded-sm hover:bg-secondary-container transition-colors" type="button">ABONE OL</button>
+                </form>
+            </div>
+        </aside>
+
+    </div>
+
+    <!-- Related News Grid -->
+    @if(isset($relatedNews) && count($relatedNews) > 0)
+    <section class="mt-16 border-t-[3px] border-primary pt-8">
+        <h2 class="font-headline-md text-headline-md text-primary mb-6">BUNLAR DA İLGİNİZİ ÇEKEBİLİR</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+            @foreach($relatedNews as $item)
+            <a class="group block border border-outline-variant bg-surface hover:shadow-lg transition-shadow" href="{{ route('news.show', $item->slug) }}">
+                <div class="relative w-full aspect-[4/3] overflow-hidden">
+                    <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" src="{{ $item->image_url }}" alt="{{ $item->title }}">
+                </div>
+                <div class="p-4">
+                    @if($item->category)
+                    <span class="text-secondary font-label-caps text-label-caps mb-2 block">{{ mb_strtoupper($item->category->name) }}</span>
+                    @endif
+                    <h3 class="font-headline-sm text-headline-sm text-on-surface group-hover:text-primary transition-colors line-clamp-3">
+                        {{ $item->title }}
+                    </h3>
+                </div>
+            </a>
+            @endforeach
+        </div>
+    </section>
+    @endif
+
+</main>
 @endsection

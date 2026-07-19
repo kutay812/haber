@@ -52,6 +52,7 @@
                 <table class="table table-hover align-middle" id="newsTable">
                     <thead class="table-light">
                         <tr>
+                            <th style="width: 80px;">Görsel</th>
                             <th>Başlık</th>
                             <th>Kategori</th>
                             <th>Yazar</th>
@@ -65,11 +66,20 @@
                         @forelse($news as $item)
                             <tr>
                                 <td>
+                                    @if($item->image_url)
+                                        <img src="{{ $item->image_url }}" alt="" class="img-thumbnail" style="width: 60px; height: 60px; object-fit: cover;">
+                                    @else
+                                        <div class="bg-light text-muted d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                            <i class="fas fa-image"></i>
+                                        </div>
+                                    @endif
+                                </td>
+                                <td>
                                     <a href="{{ route('admin.news.show', $item) }}" class="text-decoration-none">
                                         {{ Str::limit($item->title, 50) }}
                                     </a>
                                 </td>
-                                <td>{{ $item->category->name ?? 'Kategorisiz' }}</td>
+                                <td>{{ $item->categories && $item->categories->count() > 0 ? $item->categories->pluck('name')->join(', ') : ($item->category->name ?? 'Kategorisiz') }}</td>
                                 <td>{{ $item->user->name ?? 'Bilinmiyor' }}</td>
                                 <td>
                                     @switch($item->status)

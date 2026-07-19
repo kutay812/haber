@@ -5,13 +5,23 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\News;
 use App\Models\Category;
-use App\Models\Image;
+use App\Http\Requests\StoreNewsRequest;
+use App\Http\Requests\UpdateNewsRequest;
+use App\Services\NewsService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 
 class NewsController extends Controller
 {
-    // Haberleri listele (admin tablosu)
+    protected NewsService $newsService;
+
+    public function __construct(NewsService $newsService)
+    {
+        $this->newsService = $newsService;
+    }
+
+    /**
+     * Haberleri listele (admin tablosu)
+     */
     public function index(Request $request)
     {
         $query = News::query()
@@ -32,7 +42,9 @@ class NewsController extends Controller
         return view('admin.news.index', compact('news'));
     }
 
-    // Haberlerde arama (admin autocomplete/search)
+    /**
+     * Haberlerde arama (admin autocomplete/search)
+     */
     public function search(Request $request)
     {
         $search = $request->get('search');
@@ -63,138 +75,62 @@ class NewsController extends Controller
         return response()->json(['items' => $items], 200);
     }
 
-    // Haber detayını göster (admin)
+    /**
+     * Haber detayını göster (admin)
+     */
     public function show(News $news)
     {
         return view('admin.news.show', compact('news'));
     }
 
-    // Haber oluşturma formu (admin)
+    /**
+     * Haber oluşturma formu (admin)
+     */
     public function create()
     {
         $categories = Category::all();
         return view('admin.news.create', compact('categories'));
     }
 
-    // Haber kaydetme (admin)
-    public function store(Request $request)
+    /**
+     * Haber kaydetme (admin)
+     */
+    public function store(StoreNewsRequest $request)
     {
-        $validated = $request->validate([
-            'title'       => 'required|string|max:255',
-            'description' => 'required|string',
-            'content'     => 'required|string',
-            'category_id' => 'required|exists:categories,id',
-            'is_active'   => 'required|boolean',
-            'new_image'   => 'nullable|image|mimes:jpg,jpeg,png,gif,webp|max:10240'
-        ]);
-
-        // SLUG oluşturma ve benzersizleştirme
-        $slug = Str::slug($validated['title']);
-        $originalSlug = $slug;
-        $counter = 1;
-        while (News::where('slug', $slug)->exists()) {
-            $slug = $originalSlug . '-' . $counter++;
-        }
-
-        $image_id = null;
-        if ($request->hasFile('new_image')) {
-            $imageFile = $request->file('new_image');
-            $imagePath = $imageFile->store('news-images', 'public');
-            $image = Image::create([
-                'path' => $imagePath,
-                'name' => $imageFile->getClientOriginalName(), // << name alanı DOLDURULUYOR
-            ]);
-            $image_id = $image->id;
-        }
-
-        News::create([
-            'title'       => $validated['title'],
-            'description' => $validated['description'],
-            'content'     => $validated['content'],
-            'category_id' => $validated['category_id'],
-            'image_id'    => $image_id,
-            'is_active'   => $validated['is_active'],
-            'user_id'     => auth()->id(),
-            'views'       => 0,
-            'slug'        => $slug,
-        ]);
+        $this->newsService->createNews($request->validated(), auth()->id());
 
         return redirect()->route('admin.news.index')
             ->with('success', 'Haber başarıyla oluşturuldu.');
     }
 
-    // Haber düzenleme formu (admin)
+    /**
+     * Haber düzenleme formu (admin)
+     */
     public function edit(News $news)
     {
         $categories = Category::all();
         return view('admin.news.edit', compact('news', 'categories'));
     }
 
-    // Haber güncelleme (admin)
-    public function update(Request $request, News $news)
+    /**
+     * Haber güncelleme (admin)
+     */
+    public function update(UpdateNewsRequest $request, News $news)
     {
-        $validated = $request->validate([
-            'title'       => 'required|string|max:255',
-            'description' => 'required|string',
-            'content'     => 'required|string',
-            'category_id' => 'required|exists:categories,id',
-            'is_active'   => 'required|boolean',
-            'new_image'   => 'nullable|image|mimes:jpg,jpeg,png,gif,webp|max:10240'
-        ]);
-
-        // Eğer başlık değişirse yeni slug üret, yine benzersiz yap!
-        if ($news->title !== $validated['title']) {
-            $slug = Str::slug($validated['title']);
-            $originalSlug = $slug;
-            $counter = 1;
-            while (News::where('slug', $slug)->where('id', '!=', $news->id)->exists()) {
-                $slug = $originalSlug . '-' . $counter++;
-            }
-            $validated['slug'] = $slug;
-        }
-
-        // YENİ RESİM yüklenmişse, eskisini sil ve yeni resmi yükle
-        if ($request->hasFile('new_image')) {
-            // ESKİ RESİM SİLME
-            if ($news->image) {
-                $oldPath = storage_path('app/public/' . $news->image->path);
-                if (file_exists($oldPath)) {
-                    unlink($oldPath);
-                }
-                $news->image->delete();
-            }
-
-            // YENİ RESMİ KAYDET
-            $imageFile = $request->file('new_image');
-            $imagePath = $imageFile->store('news-images', 'public');
-            $image = Image::create([
-                'path' => $imagePath,
-                'name' => $imageFile->getClientOriginalName(), // << name alanı DOLDURULUYOR
-            ]);
-            $validated['image_id'] = $image->id;
-        }
-
-        $news->update($validated);
+        $this->newsService->updateNews($news, $request->validated());
 
         return redirect()->route('admin.news.index')
-            ->with('success', 'Haber başarıyla güncellendi ve görsel güncellendi.');
+            ->with('success', 'Haber başarıyla güncellendi.');
     }
 
-    // Haber silme (admin)
+    /**
+     * Haber silme (admin)
+     */
     public function destroy(News $news)
     {
-        // Haber silinirken görseli de sil
-        if ($news->image) {
-            $oldPath = storage_path('app/public/' . $news->image->path);
-            if (file_exists($oldPath)) {
-                unlink($oldPath);
-            }
-            $news->image->delete();
-        }
-
-        $news->delete();
+        $this->newsService->deleteNews($news);
 
         return redirect()->route('admin.news.index')
-            ->with('success', 'Haber ve görsel başarıyla silindi.');
+            ->with('success', 'Haber başarıyla silindi.');
     }
 }

@@ -13,9 +13,17 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\UserLoginController;
 use App\Http\Controllers\UserRegisterController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\CommentController; // <-- Yorum controller'ı
+use App\Http\Controllers\CommentController;
+use App\Http\Controllers\SitemapController;
+use App\Http\Controllers\Admin\NewsSourceController;
+use App\Http\Controllers\Admin\TagController;
 
 // === PUBLIC (Ziyaretçi & Kullanıcı) ===
+
+// SEO & Sitemap & RSS Feed
+Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
+Route::get('/sitemap-news.xml', [SitemapController::class, 'news'])->name('sitemap.news');
+Route::get('/feed', [SitemapController::class, 'feed'])->name('feed');
 
 // Ana sayfa ve haberler
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -27,10 +35,11 @@ Route::post('/haber-ekle', [HomeController::class, 'store'])->name('news.store')
 Route::put('/haber/{id}', [HomeController::class, 'update'])->name('news.update')->middleware(['auth']);
 
 // KULLANICI GİRİŞ & KAYIT
-Route::get('/login', [UserLoginController::class, 'showLoginForm'])->name('login.form');
-Route::post('/login', [UserLoginController::class, 'login'])->name('login.submit');
+Route::get('/login', [UserLoginController::class, 'showLoginForm'])->name('login');
+Route::post('/login', [UserLoginController::class, 'login'])->name('login.submit')->middleware('throttle:5,1');
 Route::post('/logout', [UserLoginController::class, 'logout'])->name('logout');
-Route::post('/register', [UserRegisterController::class, 'register'])->name('register.submit');
+Route::get('/register', [UserRegisterController::class, 'showRegisterForm'])->name('register');
+Route::post('/register', [UserRegisterController::class, 'register'])->name('register.submit')->middleware('throttle:5,1');
 
 // PROFİL & YORUM
 Route::middleware('auth')->group(function () {
@@ -39,7 +48,7 @@ Route::middleware('auth')->group(function () {
     Route::put('/profil', [ProfileController::class, 'update'])->name('profile.update');
 
     // === YORUMLAR ===
-    Route::post('/haber/{news}/yorum', [CommentController::class, 'store'])->name('comments.store'); // yorum ekle
+    Route::post('/haber/{news}/yorum', [CommentController::class, 'store'])->name('comments.store')->middleware('throttle:10,1'); // yorum ekle
     Route::get('/yorum/{comment}/duzenle', [CommentController::class, 'edit'])->name('comments.edit'); // yorum düzenle formu
     Route::put('/yorum/{comment}', [CommentController::class, 'update'])->name('comments.update'); // güncelle
     Route::delete('/yorum/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy'); // sil
@@ -58,12 +67,20 @@ Route::middleware('guest')->group(function () {
 // === ADMIN PANELİ & PROFİL ===
 Route::prefix('admin')
     ->name('admin.')
+    ->middleware(['auth'])
+    ->group(function () {
+        Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+    });
+
+Route::prefix('admin')
+    ->name('admin.')
     ->middleware(['auth', 'role:Super Admin|Admin|Editor'])
     ->group(function () {
         Route::get('/', [DashboardController::class, 'index'])->name('index');
+        Route::post('/clear-cache', [DashboardController::class, 'clearCache'])->name('clear-cache');
+        Route::post('/fetch-news', [DashboardController::class, 'fetchNews'])->name('fetch-news');
         Route::get('/profile', [AdminProfileController::class, 'show'])->name('profile');
         Route::put('/profile', [AdminProfileController::class, 'update'])->name('profile.update');
-        Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
         // Arama
         Route::get('/news/search', [NewsController::class, 'search'])->name('news.search');
@@ -74,6 +91,11 @@ Route::prefix('admin')
         Route::resource('news', NewsController::class);
         Route::resource('categories', AdminCategoryController::class);
         Route::resource('users', UserController::class)->middleware('permission:users.view');
+        
+        // Haber Kaynakları & Etiketler
+        Route::post('sources/{source}/fetch', [NewsSourceController::class, 'fetch'])->name('sources.fetch');
+        Route::resource('sources', NewsSourceController::class);
+        Route::resource('tags', TagController::class);
 
         // Profil resimleri
         Route::delete('/profile/image', [AdminProfileController::class, 'deleteProfileImage'])->name('profile.image.delete');

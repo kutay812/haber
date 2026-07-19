@@ -1,2 +1,8 @@
 User-agent: *
-Disallow:
+Disallow: /admin/
+Disallow: /login
+Disallow: /register
+Disallow: /api/
+
+Sitemap: {{ url('sitemap.xml') }}
+Sitemap: {{ url('sitemap-news.xml') }}

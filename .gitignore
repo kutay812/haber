@@ -22,3 +22,7 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Ensure sensitive storage logs and uploads are completely ignored
+/storage/logs/
+/storage/app/public/

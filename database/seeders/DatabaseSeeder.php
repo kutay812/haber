@@ -6,9 +6,11 @@ use Illuminate\Database\Seeder;
 use Database\Seeders\UserSeeder;
 use Database\Seeders\ImagesSeeder;
 use Database\Seeders\CategorySeeder;
-use Database\Seeders\MainCategorySeeder; // Removed because the class does not exist
+use Database\Seeders\MainCategorySeeder;
 use Database\Seeders\PermissionSeeder;
-
+use Database\Seeders\RoleSeeder;
+use Database\Seeders\NewsSeeder;
+use Database\Seeders\NewsSourceSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -24,6 +26,7 @@ class DatabaseSeeder extends Seeder
             ImagesSeeder::class,
             MainCategorySeeder::class,
             CategorySeeder::class,
+            NewsSourceSeeder::class,  // Added national RSS sources
             NewsSeeder::class,
         ]);
     }

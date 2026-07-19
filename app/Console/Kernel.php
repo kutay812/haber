@@ -21,7 +21,10 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // $schedule->command('inspire')->hourly();
+        // Her 30 dakikada bir haber kaynaklarından otomatik çek
+        $schedule->command('news:fetch')->everyThirtyMinutes()
+                 ->withoutOverlapping()
+                 ->appendOutputTo(storage_path('logs/news-fetch.log'));
     }
 
     /**

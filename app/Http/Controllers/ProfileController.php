@@ -2,15 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Http\Requests\ProfileUpdateRequest;
+use App\Services\UserService;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 
 class ProfileController extends Controller
 {
-    public function __construct()
+    protected UserService $userService;
+
+    public function __construct(UserService $userService)
     {
         $this->middleware('auth');
+        $this->userService = $userService;
     }
 
     public function show()
@@ -20,28 +23,15 @@ class ProfileController extends Controller
         return view('profile', compact('user', 'roles'));
     }
 
-    public function update(Request $request)
+    public function update(ProfileUpdateRequest $request)
     {
         $user = Auth::user();
-
-        $request->validate([
-            'name'  => 'required|string|max:255',
-            'email' => "required|email|unique:users,email,{$user->id}",
-            'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
-        ]);
-
-        // Profil resmi yüklemesi (profile-image klasörüne)
-        if ($request->hasFile('profile_image')) {
-            if ($user->profile_image && Storage::disk('public')->exists($user->profile_image)) {
-                Storage::disk('public')->delete($user->profile_image);
-            }
-            $path = $request->file('profile_image')->store('profile-image', 'public');
-            $user->profile_image = $path;
-        }
-
-        $user->name  = $request->name;
-        $user->email = $request->email;
-        $user->save();
+        
+        // Delegate to UserService (note that UserService->profileEdit is the repository implementation,
+        // but we can directly update attributes cleanly or use profileEdit.
+        // Let's use direct updating properties or call profileEdit depending on format)
+        
+        $this->userService->profileEdit($user, $request->validated());
 
         return redirect('/')->with('success', 'Profiliniz başarıyla güncellendi.');
     }

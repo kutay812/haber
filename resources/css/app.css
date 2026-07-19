@@ -1,13 +1,189 @@
-.pagination {
-    margin-bottom: 0;
+@import "tailwindcss";
+
+/* Design System - Custom Tokens & Styles from Stitch */
+@theme {
+  /* Colors from Stitch */
+  --color-surface-dim: #dcd9d9;
+  --color-on-surface-variant: #43474f;
+  --color-surface: #fcf9f8;
+  --color-background: #fcf9f8;
+  --color-on-tertiary-fixed: #341100;
+  --color-on-secondary-fixed: #410001;
+  --color-on-surface: #1c1b1b;
+  --color-surface-container-highest: #e5e2e1;
+  --color-surface-container-lowest: #ffffff;
+  --color-on-error-container: #93000a;
+  --color-primary-fixed-dim: #a7c8ff;
+  --color-tertiary-container: #592300;
+  --color-primary-container: #003366;
+  --color-outline: #737780;
+  --color-surface-tint: #3a5f94;
+  --color-primary: #001e40;
+  --color-on-secondary-fixed-variant: #930007;
+  --color-error-container: #ffdad6;
+  --color-surface-variant: #e5e2e1;
+  --color-secondary-fixed: #ffdad5;
+  --color-tertiary: #381300;
+  --color-surface-container-high: #eae7e7;
+  --color-on-tertiary-fixed-variant: #723610;
+  --color-tertiary-fixed-dim: #ffb690;
+  --color-on-primary-fixed: #001b3c;
+  --color-surface-bright: #fcf9f8;
+  --color-primary-fixed: #d5e3ff;
+  --color-inverse-on-surface: #f3f0ef;
+  --color-inverse-primary: #a7c8ff;
+  --color-on-tertiary-container: #d8885c;
+  --color-on-secondary: #ffffff;
+  --color-on-primary-container: #799dd6;
+  --color-on-primary: #ffffff;
+  --color-surface-container: #f0eded;
+  --color-surface-container-low: #f6f3f2;
+  --color-error: #ba1a1a;
+  --color-on-primary-fixed-variant: #1f477b;
+  --color-tertiary-fixed: #ffdbca;
+  --color-inverse-surface: #313030;
+  --color-secondary-fixed-dim: #ffb4aa;
+  --color-secondary: #bc000c;
+  --color-outline-variant: #c3c6d1;
+  --color-on-background: #1c1b1b;
+  --color-on-secondary-container: #fffbff;
+  --color-secondary-container: #e80f16;
+  --color-on-tertiary: #ffffff;
+  --color-on-error: #ffffff;
+
+  /* Spacing from Stitch */
+  --spacing-section-gap: 48px;
+  --spacing-gutter: 20px;
+  --spacing-container-max: 1280px;
+  --spacing-component-padding: 12px;
+  --spacing-margin-mobile: 16px;
+
+  /* Typography / Fonts */
+  --font-headline-lg: 'Inter', sans-serif;
+  --font-label-caps: 'Inter', sans-serif;
+  --font-body-md: 'Source Serif 4', serif;
+  --font-body-lg: 'Source Serif 4', serif;
+  --font-display-hero-mobile: 'Inter', sans-serif;
+  --font-display-hero: 'Inter', sans-serif;
+  --font-headline-md: 'Inter', sans-serif;
+  --font-headline-sm: 'Inter', sans-serif;
+  --font-meta-data: 'Inter', sans-serif;
+
+  /* Border Radius */
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+  --radius-2xl: 0px;
+  --radius-DEFAULT: 0px;
+  --radius-full: 9999px;
+  
+  /* Retained animations/transitions */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-back: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-fast: 200ms;
+  --duration-normal: 300ms;
+  --duration-slow: 500ms;
+  --shadow-sm: 0 1px 2px oklch(0 0 0 / 0.05);
+  --shadow-md: 0 4px 12px oklch(0 0 0 / 0.05);
+  --shadow-lg: 0 12px 30px oklch(0 0 0 / 0.08);
 }
 
-.pagination .page-link {
-    padding: 0.25rem 0.5rem;
-    font-size: 0.875rem;
-    line-height: 1.5;
+/* Utilities for typography to match Stitch exactly */
+@utility text-headline-lg { font-size: 32px; line-height: 40px; font-weight: 700; }
+@utility text-label-caps { font-size: 12px; line-height: 16px; letter-spacing: 0.05em; font-weight: 700; }
+@utility text-body-md { font-size: 16px; line-height: 26px; font-weight: 400; }
+@utility text-body-lg { font-size: 18px; line-height: 30px; font-weight: 400; }
+@utility text-display-hero-mobile { font-size: 32px; line-height: 38px; letter-spacing: -0.01em; font-weight: 800; }
+@utility text-display-hero { font-size: 48px; line-height: 56px; letter-spacing: -0.02em; font-weight: 800; }
+@utility text-headline-md { font-size: 24px; line-height: 32px; font-weight: 700; }
+@utility text-headline-sm { font-size: 18px; line-height: 24px; font-weight: 600; }
+@utility text-meta-data { font-size: 13px; line-height: 18px; font-weight: 400; }
+
+/* Keep existing base resets if needed, but remove old logic */
+body {
+  background-color: var(--color-background);
+  color: var(--color-on-background);
+  font-family: var(--font-body-md);
+  overflow-x: hidden;
 }
 
-.pagination .page-item.active .page-link {
-    z-index: 3;
+/* Animations from old file */
+.hover-lift {
+  transition: transform var(--duration-normal) var(--ease-out-expo), box-shadow var(--duration-normal) var(--ease-out-expo);
+}
+@media (hover: hover) {
+  .hover-lift:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+  }
+}
+.scroll-progress-bar {
+  position: fixed; top: 0; left: 0; width: 100%; height: 4px;
+  background: linear-gradient(90deg, var(--color-secondary), var(--color-primary));
+  transform-origin: left; animation: scaleX linear; animation-timeline: scroll();
+  scale: 0 1; z-index: 1000;
+}
+@keyframes scaleX { to { scale: 1 1; } }
+@keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+.skeleton-loading {
+  background: linear-gradient(90deg, var(--color-surface-container) 25%, var(--color-outline-variant) 50%, var(--color-surface-container) 75%);
+  background-size: 200% 100%; animation: shimmer 1.5s infinite linear;
+}
+
+/* Ticker styles from Stitch - Infinite seamless marquee */
+.ticker-wrap {
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+}
+.ticker {
+  display: flex;
+  white-space: nowrap;
+  width: max-content;
+  animation: ticker 40s linear infinite;
+}
+.ticker:hover {
+  animation-play-state: paused;
+}
+.ticker__item {
+  display: inline-block;
+  flex-shrink: 0;
+  padding: 0 2rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+}
+@keyframes ticker {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;  
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;  
+  overflow: hidden;
+}
+
+.line-clamp-4 {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;  
+  overflow: hidden;
+}
+
+/* Content Area styling */
+.news-content-area p {
+  margin-bottom: 1.5rem;
+  line-height: 1.8;
 }

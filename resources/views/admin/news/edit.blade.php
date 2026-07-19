@@ -73,8 +73,8 @@
                         <div class="mb-3">
                             <label class="form-label">Mevcut Görsel</label>
                             <div id="image-preview" class="mt-2">
-                                @if($news->image)
-                                    <img src="{{ asset('storage/profile-image/' . $news->image->path) }}" 
+                                @if($news->image_url)
+                                    <img src="{{ $news->image_url }}" 
                                          alt="Seçili görsel" 
                                          class="img-thumbnail">
                                 @else

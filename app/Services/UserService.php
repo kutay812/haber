@@ -52,16 +52,16 @@ class UserService
 
     public function profileEdit($user, $data)
     {
-        if (!Hash::check($data['current_password'], $user->password)) {
-            throw new \Exception('Mevcut şifreniz yanlış.');
-        }
-
-        $user->name = $data['name'];
-        $user->email = $data['email'];
-
-        if (!empty($data['password'])) {
+        // Only verify current password if user is trying to change password
+        if (!empty($data['password']) || !empty($data['current_password'])) {
+            if (empty($data['current_password']) || !Hash::check($data['current_password'], $user->password)) {
+                throw new \Exception('Mevcut şifreniz yanlış veya girilmedi.');
+            }
             $user->password = Hash::make($data['password']);
         }
+
+        $user->name = $data['name'] ?? $user->name;
+        $user->email = $data['email'] ?? $user->email;
 
         if (isset($data['profile_image']) && $data['profile_image']) {
             // Profil resmi güncelle

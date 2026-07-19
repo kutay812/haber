@@ -60,6 +60,22 @@
                 </a>
             </li>
 
+            <!-- Nav Item - Sources -->
+            <li class="nav-item {{ request()->routeIs('admin.sources.*') ? 'active' : '' }}">
+                <a class="nav-link" href="{{ route('admin.sources.index') }}">
+                    <i class="fas fa-fw fa-rss"></i>
+                    <span>Haber Kaynakları</span>
+                </a>
+            </li>
+
+            <!-- Nav Item - Tags -->
+            <li class="nav-item {{ request()->routeIs('admin.tags.*') ? 'active' : '' }}">
+                <a class="nav-link" href="{{ route('admin.tags.index') }}">
+                    <i class="fas fa-fw fa-tags"></i>
+                    <span>Etiketler</span>
+                </a>
+            </li>
+
             <!-- Nav Item - Users -->
             <li class="nav-item {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
                 <a class="nav-link" href="{{ route('admin.users.index') }}">

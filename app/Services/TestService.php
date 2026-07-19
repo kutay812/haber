@@ -29,8 +29,8 @@ class TestService
         return User::firstOrCreate(
             ['name' => 'Ali Kutay Tosun'],
             [
-                'email' => 'kutaytosun755@gmail.com',
-                'password' => \Hash::make('123456789')
+                'email' => env('DEFAULT_ADMIN_EMAIL', 'admin@example.com'),
+                'password' => \Hash::make(env('DEFAULT_ADMIN_PASSWORD', 'secret'))
             ]
         );
     }

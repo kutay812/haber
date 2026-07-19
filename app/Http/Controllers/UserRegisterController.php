@@ -2,25 +2,37 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\RegisterRequest;
 use App\Models\User;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 
 class UserRegisterController extends Controller
 {
-    public function register(Request $request)
+    /**
+     * Show registration form
+     */
+    public function showRegisterForm()
     {
-        $request->validate([
-            'name' => 'required|string|max:100',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|min:6|confirmed',
-        ]);
+        return view('auth.register');
+    }
 
-        User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-        ]);
+    /**
+     * User registration action
+     */
+    public function register(RegisterRequest $request)
+    {
+        DB::transaction(function () use ($request) {
+            $user = User::create([
+                'name'     => $request->name,
+                'email'    => $request->email,
+                'password' => Hash::make($request->password),
+            ]);
+
+            // Default User role - Create if it doesn't exist to prevent crash
+            $role = \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'User']);
+            $user->assignRole($role);
+        });
 
         return redirect('/')->with('register_success', 'Kayıt başarılı! Giriş yapabilirsiniz.');
     }

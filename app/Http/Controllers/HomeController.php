@@ -4,161 +4,224 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use App\Models\News;
-use App\Models\Image;
+use App\Models\Tag;
+use App\Services\MarketDataService;
+use App\Http\Requests\StoreNewsRequest;
+use App\Http\Requests\UpdateNewsRequest;
+use App\Services\NewsService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Cache;
 
 class HomeController extends Controller
 {
-    // Ana Sayfa ve Kategori/Arama Filtreli Liste
-    public function index(Request $request, $categorySlug = null)
+    protected NewsService $newsService;
+
+    public function __construct(NewsService $newsService)
     {
-        $categories = Category::orderBy('name')->get();
+        $this->newsService = $newsService;
+    }
 
-        $newsQuery = News::with(['category', 'user', 'image'])->latest()->where('is_active', true);
+    /**
+     * ANA SAYFA
+     */
+    public function index(Request $request, MarketDataService $marketDataService)
+    {
+        $categories = Cache::remember('categories.all', 300, function () {
+            return Category::orderBy('name')->get();
+        });
 
+        // ── KATEGORİ VE ARAMA FİLTRESİ ──
+        $categorySlug = $request->query('kategori') ?? $request->route('slug');
         $category = null;
         if ($categorySlug) {
-            $category = Category::where('slug', $categorySlug)->firstOrFail();
+            $category = Category::where('slug', $categorySlug)->first();
+        }
+
+        // ── PİYASA VERİLERİ (DİNAMİK) ──
+        $marketData = $marketDataService->getMarketData();
+
+        // ── MANŞET HABERLERİ ──
+        $featuredNews = Cache::remember('news.featured.' . ($categorySlug ?? 'all'), 120, function () use ($category) {
+            $query = News::with(['category', 'user', 'image', 'tags', 'newsSource'])->featured()->latest();
+            if ($category) $query->where('category_id', $category->id);
+            $results = $query->limit(10)->get(); 
+
+            // Eğer manşet yoksa (hepsi silinmişse), en yeni haberleri manşet yap (YEDEK SİSTEM)
+            if ($results->isEmpty()) {
+                $fallbackQuery = News::with(['category', 'user', 'image', 'tags', 'newsSource'])->published()->latest();
+                if ($category) $fallbackQuery->where('category_id', $category->id);
+                $results = $fallbackQuery->limit(10)->get();
+            }
+            return $results;
+        });
+
+        // ── SON DAKİKA ──
+        $breakingNews = Cache::remember('news.breaking', 60, function () {
+            $results = News::with('category')->breaking()->latest()->limit(10)->get();
+            if ($results->isEmpty()) {
+                $results = News::with('category')->published()->latest()->limit(10)->get();
+            }
+            return $results;
+        });
+
+        // ── EDİTÖRÜN SEÇTİKLERİ ──
+        $editorPicks = Cache::remember('news.editor_picks', 300, function () {
+            $results = News::with(['category', 'user', 'image'])->editorPicks()->latest()->limit(5)->get();
+            if ($results->isEmpty()) {
+                $results = News::with(['category', 'user', 'image'])->published()->inRandomOrder()->limit(5)->get();
+            }
+            return $results;
+        });
+
+        // ── EN ÇOK OKUNANLAR (Son 7 gün) ──
+        $mostRead = Cache::remember('news.most_read', 300, function () {
+            return News::with(['category', 'image'])
+                       ->published()->where('created_at', '>=', now()->subDays(7))
+                       ->orderByDesc('views')->limit(10)->get();
+        });
+
+        // ── KATEGORİ BAZLI HABERLER (Sadece Ana Sayfa için) ──
+        $categoryBlocks = [];
+        if (!$category && !$request->filled('search') && !$request->filled('tag')) {
+            $targetCategories = ['gundem', 'ekonomi', 'spor', 'dunya', 'teknoloji', 'yasam', 'saglik', 'otomobil'];
+            
+            foreach ($targetCategories as $slug) {
+                $categoryBlocks[$slug] = Cache::remember('news.category_block.' . $slug, 180, function () use ($slug) {
+                    return News::with(['category', 'image'])
+                               ->published()
+                               ->whereHas('category', function($q) use ($slug) {
+                                   $q->where('slug', $slug);
+                               })
+                               ->latest()
+                               ->limit(6) // 1 Büyük, 5 Küçük vb.
+                               ->get();
+                });
+            }
+        }
+
+        // ── TREND ETİKETLER ──
+        $trendingTags = Cache::remember('tags.trending', 600, function () {
+            return Tag::orderByDesc('usage_count')->limit(15)->get();
+        });
+
+        // ── SON HABERLER VEYA ARAMA SONUÇLARI ──
+        $newsQuery = News::with(['category', 'user', 'image', 'tags', 'newsSource'])->published()->latest();
+
+        if ($category) {
             $newsQuery->where('category_id', $category->id);
         }
 
         if ($request->filled('search')) {
-            $newsQuery->where('title', 'like', '%' . $request->search . '%');
+            $search = $request->search;
+            $newsQuery->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%");
+            });
         }
 
-        $news = $newsQuery->paginate(9);
+        if ($request->filled('tag')) {
+            $newsQuery->whereHas('tags', function ($q) use ($request) {
+                $q->where('slug', $request->tag);
+            });
+        }
+
+        $news = $newsQuery->paginate(12);
 
         $canEditNews = Auth::check() && Auth::user()->hasAnyRole(['Admin', 'Editor', 'Super Admin']);
 
-        return view('welcome', compact('categories', 'news', 'category', 'canEditNews'));
+        return view('welcome', compact(
+            'categories', 'news', 'category', 'canEditNews',
+            'featuredNews', 'breakingNews', 'editorPicks',
+            'editorPicks', 'mostRead', 'trendingTags', 'categoryBlocks', 'marketData'
+        ));
     }
 
-    // HABER KAYDETME (STORE)
-    public function store(Request $request)
+    /**
+     * HABER DETAY SAYFASI
+     */
+    public function show($slug)
     {
-        $user = Auth::user();
-        if (!$user || !$user->hasAnyRole(['Admin', 'Editor', 'Super Admin'])) {
-            abort(403, 'Bu işlemi yapmaya yetkiniz yok.');
+        $news = News::with(['category', 'user', 'image', 'tags', 'comments.user', 'newsSource'])
+                     ->where('slug', $slug)
+                     ->firstOrFail();
+
+        // Görüntülenme sayısını artır (session bazlı)
+        $sessionKey = 'viewed_news_' . $news->id;
+        if (!session()->has($sessionKey)) {
+            $news->increment('views');
+            session()->put($sessionKey, true);
         }
 
-        $validated = $request->validate([
-            'title'       => 'required|string|max:200',
-            'description' => 'required|string|max:300',
-            'content'     => 'required|string|min:50',
-            'category_id' => 'required|exists:categories,id',
-            'image'       => 'nullable|image|mimes:jpg,jpeg,png,gif,webp|max:10240'
-        ]);
+        // Benzer haberler
+        $relatedNews = $news->relatedNews(4);
 
-        // Benzersiz SLUG üret
-        $slug = Str::slug($validated['title']);
-        $originalSlug = $slug;
-        $counter = 2;
-        while (News::where('slug', $slug)->exists()) {
-            $slug = $originalSlug . '-' . $counter++;
-        }
+        // En çok okunanlar (sidebar)
+        $mostRead = News::with(['category', 'image'])
+                        ->published()
+                        ->where('created_at', '>=', now()->subDays(7))
+                        ->orderByDesc('views')
+                        ->limit(5)
+                        ->get();
 
-        // Resmi fiziksel olarak public/storage/news-images klasörüne kaydet
-        $imageId = null;
-        if ($request->hasFile('image')) {
-            $imageFile = $request->file('image');
-            $publicPath = 'storage/news-images/';
-            $fileName = uniqid() . '.' . $imageFile->getClientOriginalExtension();
-            $destination = public_path($publicPath);
+        // Önceki / Sonraki haber
+        $prevNews = News::published()
+                        ->where('id', '<', $news->id)
+                        ->orderByDesc('id')
+                        ->first();
 
-            // Klasörü oluştur (yoksa)
-            if (!file_exists($destination)) {
-                mkdir($destination, 0777, true);
-            }
-            $imageFile->move($destination, $fileName);
+        $nextNews = News::published()
+                        ->where('id', '>', $news->id)
+                        ->orderBy('id')
+                        ->first();
 
-            // Image DB kaydı (sadece yol!)
-            $image = Image::create([
-                'path' => 'news-images/' . $fileName,
-                'name' => $fileName
-            ]);
-            $imageId = $image->id;
-        }
+        // Kategorideki diğer haberler
+        $categoryNews = News::with(['image'])
+                            ->published()
+                            ->where('category_id', $news->category_id)
+                            ->where('id', '!=', $news->id)
+                            ->latest()
+                            ->limit(4)
+                            ->get();
 
-        // Haberi kaydet (image_id ile!)
-        $news = News::create([
-            'title'       => $validated['title'],
-            'description' => $validated['description'],
-            'content'     => $validated['content'],
-            'category_id' => $validated['category_id'],
-            'user_id'     => $user->id,
-            'is_active'   => true,
-            'slug'        => $slug,
-            'image_id'    => $imageId,
-        ]);
+        return view('news.show', compact(
+            'news', 'relatedNews', 'prevNews', 'nextNews', 'categoryNews', 'mostRead'
+        ));
+    }
+
+    /**
+     * HABER KAYDETME (STORE)
+     */
+    public function store(StoreNewsRequest $request)
+    {
+        $this->newsService->createNews($request->validated(), auth()->id());
+        $this->clearNewsCache();
 
         return redirect()->route('home')->with('success', 'Haber başarıyla eklendi!');
     }
 
-    // HABER DETAYI
-    public function show($slug)
+    /**
+     * HABER GÜNCELLEME (UPDATE)
+     */
+    public function update(UpdateNewsRequest $request, $id)
     {
-        $haber = News::with(['category', 'user', 'image'])->where('slug', $slug)->firstOrFail();
-        $haber->increment('views');
-        return view('news.show', compact('haber'));
-    }
-
-    // HABER GÜNCELLEME (UPDATE)
-    public function update(Request $request, $id)
-    {
-        $user = Auth::user();
-        if (!$user || !$user->hasAnyRole(['Admin', 'Editor', 'Super Admin'])) {
-            abort(403, 'Bu işlemi yapmaya yetkiniz yok.');
-        }
-
-        $haber = News::with('image')->findOrFail($id);
-
-        $validated = $request->validate([
-            'title'       => 'required|string|max:200',
-            'description' => 'required|string|max:300',
-            'content'     => 'required|string|min:50',
-            'category_id' => 'required|exists:categories,id',
-            'image'       => 'nullable|image|mimes:jpg,jpeg,png,gif,webp|max:10240'
-        ]);
-
-        $haber->title       = $validated['title'];
-        $haber->description = $validated['description'];
-        $haber->content     = $validated['content'];
-        $haber->category_id = $validated['category_id'];
-
-        // Eğer yeni resim geldiyse:
-        if ($request->hasFile('image')) {
-            $imageFile = $request->file('image');
-            $publicPath = 'storage/news-images/';
-            $fileName = uniqid() . '.' . $imageFile->getClientOriginalExtension();
-            $destination = public_path($publicPath);
-
-            if (!file_exists($destination)) {
-                mkdir($destination, 0777, true);
-            }
-            $imageFile->move($destination, $fileName);
-
-            // Eski resmi sil
-            if ($haber->image && $haber->image->path && file_exists(public_path('storage/' . $haber->image->path))) {
-                @unlink(public_path('storage/' . $haber->image->path));
-            }
-
-            if ($haber->image) {
-                $haber->image->update([
-                    'path' => 'news-images/' . $fileName,
-                    'name' => $fileName
-                ]);
-            } else {
-                $image = Image::create([
-                    'path' => 'news-images/' . $fileName,
-                    'name' => $fileName
-                ]);
-                $haber->image_id = $image->id;
-            }
-        }
-        $haber->save();
+        $haber = News::findOrFail($id);
+        $this->newsService->updateNews($haber, $request->validated());
+        $this->clearNewsCache();
 
         return redirect()->route('news.show', $haber->slug)->with('success', 'Haber başarıyla güncellendi.');
+    }
+
+    /**
+     * Cache temizle
+     */
+    protected function clearNewsCache(): void
+    {
+        Cache::forget('news.featured.all');
+        Cache::forget('news.breaking');
+        Cache::forget('news.editor_picks');
+        Cache::forget('news.most_read');
+        Cache::forget('news.most_commented');
+        Cache::forget('tags.trending');
     }
 }

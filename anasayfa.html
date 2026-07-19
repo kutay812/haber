@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+
+<html class="light" lang="tr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Haber Portal - Anasayfa</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&amp;family=Source+Serif+4:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-dim": "#dcd9d9",
+                        "on-surface-variant": "#43474f",
+                        "surface": "#fcf9f8",
+                        "background": "#fcf9f8",
+                        "on-tertiary-fixed": "#341100",
+                        "on-secondary-fixed": "#410001",
+                        "on-surface": "#1c1b1b",
+                        "surface-container-highest": "#e5e2e1",
+                        "surface-container-lowest": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "primary-fixed-dim": "#a7c8ff",
+                        "tertiary-container": "#592300",
+                        "primary-container": "#003366",
+                        "outline": "#737780",
+                        "surface-tint": "#3a5f94",
+                        "primary": "#001e40",
+                        "on-secondary-fixed-variant": "#930007",
+                        "error-container": "#ffdad6",
+                        "surface-variant": "#e5e2e1",
+                        "secondary-fixed": "#ffdad5",
+                        "tertiary": "#381300",
+                        "surface-container-high": "#eae7e7",
+                        "on-tertiary-fixed-variant": "#723610",
+                        "tertiary-fixed-dim": "#ffb690",
+                        "on-primary-fixed": "#001b3c",
+                        "surface-bright": "#fcf9f8",
+                        "primary-fixed": "#d5e3ff",
+                        "inverse-on-surface": "#f3f0ef",
+                        "inverse-primary": "#a7c8ff",
+                        "on-tertiary-container": "#d8885c",
+                        "on-secondary": "#ffffff",
+                        "on-primary-container": "#799dd6",
+                        "on-primary": "#ffffff",
+                        "surface-container": "#f0eded",
+                        "surface-container-low": "#f6f3f2",
+                        "error": "#ba1a1a",
+                        "on-primary-fixed-variant": "#1f477b",
+                        "tertiary-fixed": "#ffdbca",
+                        "inverse-surface": "#313030",
+                        "secondary-fixed-dim": "#ffb4aa",
+                        "secondary": "#bc000c",
+                        "outline-variant": "#c3c6d1",
+                        "on-background": "#1c1b1b",
+                        "on-secondary-container": "#fffbff",
+                        "secondary-container": "#e80f16",
+                        "on-tertiary": "#ffffff",
+                        "on-error": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "section-gap": "48px",
+                        "gutter": "20px",
+                        "container-max": "1280px",
+                        "component-padding": "12px",
+                        "margin-mobile": "16px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Inter"],
+                        "label-caps": ["Inter"],
+                        "body-md": ["\"Source Serif 4\""],
+                        "body-lg": ["\"Source Serif 4\""],
+                        "display-hero-mobile": ["Inter"],
+                        "display-hero": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "meta-data": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+                        "label-caps": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "26px", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "30px", "fontWeight": "400" }],
+                        "display-hero-mobile": ["32px", { "lineHeight": "38px", "letterSpacing": "-0.01em", "fontWeight": "800" }],
+                        "display-hero": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "headline-sm": ["18px", { "lineHeight": "24px", "fontWeight": "600" }],
+                        "meta-data": ["13px", { "lineHeight": "18px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .ticker-wrap {
+            width: 100%;
+            overflow: hidden;
+            background-color: #1c1b1b;
+            padding-left: 20px;
+            box-sizing: border-box;
+            position: relative;
+        }
+        .ticker {
+            display: inline-block;
+            white-space: nowrap;
+            padding-right: 100%;
+            animation-iteration-count: infinite;
+            animation-timing-function: linear;
+            animation-name: ticker;
+            animation-duration: 30s;
+        }
+        .ticker__item {
+            display: inline-block;
+            padding: 0 2rem;
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        @keyframes ticker {
+            0% {
+                transform: translate3d(0, 0, 0);
+                visibility: visible;
+            }
+            100% {
+                transform: translate3d(-100%, 0, 0);
+            }
+        }
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;  
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex flex-col">
+<!-- TopNavBar -->
+<header class="bg-surface dark:bg-on-surface docked full-width top-0 border-b border-outline-variant dark:border-on-surface-variant sticky z-50">
+<div class="flex flex-col w-full max-w-container-max mx-auto px-gutter py-2">
+<!-- Top Row: Logo & Search/Actions -->
+<div class="flex justify-between items-center py-4">
+<a class="font-display-hero text-display-hero font-extrabold tracking-tighter text-secondary dark:text-secondary-fixed-dim hover:opacity-80 transition-opacity" href="#">
+                    HABER PORTAL
+                </a>
+<div class="flex items-center gap-6 hidden md:flex">
+<div class="relative">
+<input class="bg-surface-container border border-outline-variant rounded-full py-2 pl-4 pr-10 focus:outline-none focus:border-primary text-sm w-64" placeholder="Haberlerde ara..." type="text"/>
+<span class="material-symbols-outlined absolute right-3 top-1/2 transform -translate-y-1/2 text-on-surface-variant" data-icon="search">search</span>
+</div>
+<button class="flex items-center gap-2 bg-primary text-on-primary px-4 py-2 rounded font-headline-sm text-headline-sm tracking-tight hover:opacity-80 scale-95 transition-all">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+                        Giriş Yap
+                    </button>
+</div>
+<!-- Mobile Menu Button -->
+<button class="md:hidden text-primary">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+</div>
+<!-- Bottom Row: Navigation Links -->
+<nav class="hidden md:flex gap-6 py-2 overflow-x-auto">
+<a class="text-secondary dark:text-secondary-fixed border-b-2 border-secondary dark:border-secondary-fixed pb-1 font-headline-sm text-headline-sm tracking-tight" href="#">TÜRKİYE</a>
+<a class="text-on-surface dark:text-surface-variant font-bold hover:text-secondary hover:text-secondary dark:hover:text-secondary-fixed transition-colors duration-200 font-headline-sm text-headline-sm tracking-tight" href="#">DÜNYA</a>
+<a class="text-on-surface dark:text-surface-variant font-bold hover:text-secondary hover:text-secondary dark:hover:text-secondary-fixed transition-colors duration-200 font-headline-sm text-headline-sm tracking-tight" href="#">EKONOMİ</a>
+<a class="text-on-surface dark:text-surface-variant font-bold hover:text-secondary hover:text-secondary dark:hover:text-secondary-fixed transition-colors duration-200 font-headline-sm text-headline-sm tracking-tight" href="#">SPOR</a>
+<a class="text-on-surface dark:text-surface-variant font-bold hover:text-secondary hover:text-secondary dark:hover:text-secondary-fixed transition-colors duration-200 font-headline-sm text-headline-sm tracking-tight" href="#">MAGAZİN</a>
+<a class="text-on-surface dark:text-surface-variant font-bold hover:text-secondary hover:text-secondary dark:hover:text-secondary-fixed transition-colors duration-200 font-headline-sm text-headline-sm tracking-tight" href="#">VİDEO</a>
+</nav>
+</div>
+</header>
+<!-- Breaking News Ticker -->
+<div class="w-full flex items-center bg-on-surface h-10 border-b border-outline-variant">
+<div class="bg-secondary text-white font-label-caps text-label-caps px-4 py-2 h-full flex items-center whitespace-nowrap z-10 shrink-0">
+            SON DAKİKA
+            <span class="w-2 h-2 rounded-full bg-white ml-2 animate-pulse"></span>
+</div>
+<div class="ticker-wrap flex-grow h-full flex items-center">
+<div class="ticker">
+<div class="ticker__item">Merkez Bankası faiz kararını açıkladı...</div>
+<div class="ticker__item">İstanbul'da yoğun kar yağışı uyarısı...</div>
+<div class="ticker__item">Borsa İstanbul güne yükselişle başladı...</div>
+<div class="ticker__item">Milli takımın yeni teknik direktörü belli oldu...</div>
+</div>
+</div>
+</div>
+<!-- Main Content Container -->
+<main class="w-full max-w-container-max mx-auto px-gutter mt-6 flex-grow flex flex-col md:flex-row gap-6">
+<!-- Left/Center Column (Hero & News Feed) -->
+<div class="w-full md:w-8/12 flex flex-col gap-6">
+<!-- Hero Section (Bento Grid Style) -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-2 h-auto md:h-[500px]">
+<!-- Lead Story (Spans 3 cols) -->
+<div class="md:col-span-3 relative group overflow-hidden border border-outline-variant h-[300px] md:h-full">
+<img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="A powerful, wide-angle press photograph showing a busy political summit in a grand, brightly lit hall. The scene is full of activity, with modern lighting reflecting off polished floors. High contrast corporate newspaper style, deep navy and muted tones, very professional." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB_QUb4zmc2jElVAqEEVsDRLTP2AsFiAi3to4tg31Vifi9JnhrW8zx-z2gyoo7MoEF1zivN5pOHyD3zYbwxcqNw04TcktmxAeUgyGuDW9gd8INKPjmXOYu9hrCPD6zMMCv_B6bPuSYBCDhrJ0RIiVoD4IGc3bOr70Eq6qvoCHivH5Qv5aSyQ7qb8zXPxP-gjLfHNJXQqZ_Oz7xo8T9VnAKkg5fqD81Erpb230OkMTWZj546KVGuA5-5hO_AJDkr_lorrSrRpsGwGSE"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
+<div class="absolute bottom-0 left-0 p-6 w-full">
+<span class="bg-primary text-white font-label-caps text-label-caps px-2 py-1 mb-2 inline-block">GÜNDEM</span>
+<h1 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-white hover:text-primary-fixed-dim transition-colors cursor-pointer">
+                            Seçim Öncesi Son Anket Sonuçları Açıklandı: İşte Detaylar
+                        </h1>
+</div>
+</div>
+<!-- Secondary Stories Stack (Spans 1 col) -->
+<div class="flex flex-row md:flex-col gap-2 h-[150px] md:h-full overflow-x-auto md:overflow-visible">
+<div class="relative group overflow-hidden border border-outline-variant w-[200px] md:w-full h-full flex-shrink-0">
+<img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="A close up photo of a rising stock market chart displayed on a modern LED screen. The numbers are glowing green and white against a dark background, illustrating financial growth. Sharp focus, corporate financial news style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC1oGrUTjJicLrQwZtT0mvP-oME7L2J5206mK0qIrIxr0XK-GQe7E0U7hAkewbXwWUktEwv2kEDdUMP7aCbTu8DcpZ9biF9sscRgZdChsu9ou7IH75sj5REnPuetv8pmm06AORy1zL7tbApV_1PBbXydjwsSjAyieQCOojcDVtql_IHkKHIsdF2UTaT9MlfY8UtEuEzFIoJO5_VghGMZy1lU5zXVyfVb_5mu2fC004DEqm80WAy7EjgGSVmPkW8ck1RwdskWZShs64"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+<div class="absolute bottom-0 left-0 p-3 w-full">
+<h2 class="font-headline-sm text-headline-sm text-white hover:text-primary-fixed-dim transition-colors cursor-pointer line-clamp-2">Dolar ve Euro'da Son Durum</h2>
+</div>
+</div>
+<div class="relative group overflow-hidden border border-outline-variant w-[200px] md:w-full h-full flex-shrink-0">
+<img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="Action shot of a football player mid-kick during a night match under bright stadium lights. Dynamic motion blur, high contrast sports photography style, focusing on the tension of the game." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD48akvYJMdy9yMnVEiQ3alX1ZIzfb7Dw0JtjNiCr79N9iqrV0rHQZpoUFal6URdGUwHUnemU9-USCzRwe4Tsh1kvrOAX8_aQoijdxtP7kgECb6iLQMlPWlaT9bk8bCprEAHRJnFMPCa4Z6r90Yx5uWdDkWyCSslQWn8-6oylPKAVLOaiXwdVr_YYudKYlhEeEbQKq7zqTwCM2HlxrImuVBREzv6ZqmcaXHia-f_eY3PRz2G9Z_T4GOQ5D6SSgKEDeDRCBIBN7oKg4"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+<div class="absolute bottom-0 left-0 p-3 w-full">
+<h2 class="font-headline-sm text-headline-sm text-white hover:text-primary-fixed-dim transition-colors cursor-pointer line-clamp-2">Derbide Nefes Kesen Mücadele</h2>
+</div>
+</div>
+<div class="relative group overflow-hidden border border-outline-variant w-[200px] md:w-full h-full flex-shrink-0">
+<img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="A sleek new electric vehicle being unveiled on a stage. Dramatic spotlights shine down on the glossy silver car. Modern technology news style, clean and futuristic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBIwfA0-uO1axbIvEi8KPxte4dkifkWCWI5OHr3hxFZaUvn47O1eWZygg25J1GNuSwYEkyvh4X2y5ntlA3LFEcKgJTf032yib-Dt-Ue3Ec8AsPWNNzVGHL2EL7XlT9DphKPoLvB3CkMlIvEKmNbPm6b0lOXuFyOVbAJP9xa0k5CfXqiiM6In95YNu75XkyXLRUfzO6v78pdRSavE1d1Jww7zc09U0kZ_g-A2PSpPNpOBuYD2Z4wdnhPZxH6YXIxs109DL5ncwGoxr0"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+<div class="absolute bottom-0 left-0 p-3 w-full">
+<h2 class="font-headline-sm text-headline-sm text-white hover:text-primary-fixed-dim transition-colors cursor-pointer line-clamp-2">Yerli Otomobilde Yeni Gelişme</h2>
+</div>
+</div>
+</div>
+</div>
+<!-- Manşetler (Headlines Grid) -->
+<div class="mt-section-gap">
+<div class="border-b-2 border-primary mb-4 pb-2">
+<h3 class="font-headline-md text-headline-md text-primary uppercase">Manşetler</h3>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+<!-- Article Card 1 -->
+<div class="flex flex-col border border-outline-variant bg-surface hover:shadow-lg transition-shadow duration-300">
+<div class="h-40 overflow-hidden relative">
+<img class="w-full h-full object-cover" data-alt="A wide shot of a modern city skyline at dusk, with lights starting to turn on in skyscrapers. Clear sky, high resolution cityscape, representing urban development news." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD1OP0vg3UhoRcVwlyEA1r5TUD7zp3_k7gKilI1T3WIkJxoKz0qc2g34O9P5MEwBrRNOBJs6USgY2CxSEuyps6NWYtPSkByWTyPXCT71u0GOOkzPh_safa4IUhg8-qzxYgSRczI9nXCgTUXBYbJmeLb7psA-iLNmv-Ac5hGWrzNUIzDdwG8T67KyT3C_6ofLW0_Uu9NxTcoyWnbBR0alZQyd_9msDOL28fCggi0MWJVYOpMWWs2aQVuXNKjSeBkOZPNGA982FyEoc4"/>
+<span class="absolute top-2 left-2 bg-secondary text-white font-label-caps text-label-caps px-2 py-1">GÜNDEM</span>
+</div>
+<div class="p-3">
+<h4 class="font-headline-sm text-headline-sm text-on-surface hover:text-secondary transition-colors cursor-pointer mb-2">Büyükşehirlerde Yeni İmar Planı Tartışmaları</h4>
+<p class="font-body-md text-body-md text-on-surface-variant line-clamp-2">Belediye meclisinde bugün oylamaya sunulacak olan yeni imar planı, çevre örgütlerinin tepkisini çekti.</p>
+</div>
+</div>
+<!-- Article Card 2 -->
+<div class="flex flex-col border border-outline-variant bg-surface hover:shadow-lg transition-shadow duration-300">
+<div class="h-40 overflow-hidden relative">
+<img class="w-full h-full object-cover" data-alt="A close-up of a scientist in a cleanroom looking through a microscope. High-tech laboratory environment with bright, sterile lighting. Technology and health news style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBOpw5I-ScIwPIY4zx4E5lBR0Dve3ztpdk2vBxJR7Cleullj1Ra_6DdxIG26SJnJerm1cy-0WaEv3rKF20jcYzUKslsYoaCmjzNbxdZcYhuaBhIgzf_aFrLusF5gPOH1i8LO66ehPyblTtpn0xniWbfkeOCOLc2U6Zu5sQ9-L8_yX6PZFXjcOOzmlSAvkhlRov1xN0463pCjcba4Xs0fWnidsTCOubZt6MH4rPM7pTGN2ZpE3ntH-4uUXR_hdF5uEDbbDIz3EpL2No"/>
+<span class="absolute top-2 left-2 bg-primary text-white font-label-caps text-label-caps px-2 py-1">BİLİM</span>
+</div>
+<div class="p-3">
+<h4 class="font-headline-sm text-headline-sm text-on-surface hover:text-secondary transition-colors cursor-pointer mb-2">Tıp Dünyasında Çığır Açacak Yeni Buluş</h4>
+<p class="font-body-md text-body-md text-on-surface-variant line-clamp-2">Yerli araştırmacılar tarafından geliştirilen yeni molekül, kanser tedavisinde umut vaat ediyor.</p>
+</div>
+</div>
+<!-- Article Card 3 -->
+<div class="flex flex-col border border-outline-variant bg-surface hover:shadow-lg transition-shadow duration-300">
+<div class="h-40 overflow-hidden relative">
+<img class="w-full h-full object-cover" data-alt="A busy cargo port with stacked colorful shipping containers and large cranes under a clear blue sky. Global trade and economic news imagery." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB2FhvA2s7fQnmnk4RvEWYQH-tUZ3W1XE5H-qDQT60vIL6cZiSU3s2SFBA-aAIrfabhusc8jtJoHPHRhB4vHCgjuR-X1Bmnl41KgpcV3x5RqHiMhHgIN5W6tA1dJgAYoa6NQ6U3kWW3YD2ob1CoXqgX-BHdtEziYusbLtLvlLxOIvk1JYF2vv7hgyfK1K7DKhBojQ5geUK6loIXb_h1aJXyZQY7QXm6nxFS5LcjyvFXNps4UJa_3WsWGnfzA7Az41GPOR7bSkNW3oE"/>
+<span class="absolute top-2 left-2 bg-tertiary-container text-white font-label-caps text-label-caps px-2 py-1">EKONOMİ</span>
+</div>
+<div class="p-3">
+<h4 class="font-headline-sm text-headline-sm text-on-surface hover:text-secondary transition-colors cursor-pointer mb-2">İhracat Rakamlarında Tüm Zamanların Rekoru</h4>
+<p class="font-body-md text-body-md text-on-surface-variant line-clamp-2">Geçtiğimiz ay gerçekleşen ihracat verileri, beklentilerin çok üzerinde geldi.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column (Sidebar) -->
+<aside class="w-full md:w-4/12 flex flex-col gap-6">
+<!-- Döviz/Altın Widget -->
+<div class="bg-surface-container border border-outline-variant p-4">
+<h3 class="font-headline-sm text-headline-sm text-primary mb-3 border-b border-outline-variant pb-2">Piyasalar</h3>
+<div class="grid grid-cols-2 gap-4">
+<div class="flex flex-col">
+<span class="font-meta-data text-meta-data text-on-surface-variant">BIST 100</span>
+<div class="flex items-center gap-1 text-green-700 font-bold">
+<span>9.876,54</span>
+<span class="material-symbols-outlined text-sm" data-icon="arrow_upward">arrow_upward</span>
+</div>
+</div>
+<div class="flex flex-col">
+<span class="font-meta-data text-meta-data text-on-surface-variant">DOLAR</span>
+<div class="flex items-center gap-1 text-red-700 font-bold">
+<span>31.45</span>
+<span class="material-symbols-outlined text-sm" data-icon="arrow_downward">arrow_downward</span>
+</div>
+</div>
+<div class="flex flex-col">
+<span class="font-meta-data text-meta-data text-on-surface-variant">EURO</span>
+<div class="flex items-center gap-1 text-green-700 font-bold">
+<span>34.20</span>
+<span class="material-symbols-outlined text-sm" data-icon="arrow_upward">arrow_upward</span>
+</div>
+</div>
+<div class="flex flex-col">
+<span class="font-meta-data text-meta-data text-on-surface-variant">ALTIN (Gr)</span>
+<div class="flex items-center gap-1 text-green-700 font-bold">
+<span>2.150</span>
+<span class="material-symbols-outlined text-sm" data-icon="arrow_upward">arrow_upward</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Çok Okunanlar (Trending List) -->
+<div class="bg-surface border border-outline-variant p-4">
+<h3 class="font-headline-sm text-headline-sm text-secondary mb-4 uppercase flex items-center gap-2">
+<span class="material-symbols-outlined" data-icon="trending_up">trending_up</span>
+                    Çok Okunanlar
+                </h3>
+<ol class="flex flex-col gap-3">
+<li class="flex items-start gap-3 group cursor-pointer border-b border-outline-variant pb-2 last:border-0">
+<span class="font-display-hero text-display-hero text-outline/30 group-hover:text-primary transition-colors leading-none">1</span>
+<h4 class="font-body-md text-body-md font-bold text-on-surface group-hover:text-secondary transition-colors">Meteoroloji'den 45 il için sarı kodlu uyarı</h4>
+</li>
+<li class="flex items-start gap-3 group cursor-pointer border-b border-outline-variant pb-2 last:border-0">
+<span class="font-display-hero text-display-hero text-outline/30 group-hover:text-primary transition-colors leading-none">2</span>
+<h4 class="font-body-md text-body-md font-bold text-on-surface group-hover:text-secondary transition-colors">EYT'lilerin ilk maaşları ne zaman yatacak?</h4>
+</li>
+<li class="flex items-start gap-3 group cursor-pointer border-b border-outline-variant pb-2 last:border-0">
+<span class="font-display-hero text-display-hero text-outline/30 group-hover:text-primary transition-colors leading-none">3</span>
+<h4 class="font-body-md text-body-md font-bold text-on-surface group-hover:text-secondary transition-colors">Galatasaray'da flaş ayrılık: Yıldız isimle yollar ayrıldı</h4>
+</li>
+<li class="flex items-start gap-3 group cursor-pointer border-b border-outline-variant pb-2 last:border-0">
+<span class="font-display-hero text-display-hero text-outline/30 group-hover:text-primary transition-colors leading-none">4</span>
+<h4 class="font-body-md text-body-md font-bold text-on-surface group-hover:text-secondary transition-colors">Altın fiyatlarında sert düşüş: İşte Kapalıçarşı'da son durum</h4>
+</li>
+</ol>
+</div>
+<!-- Yazarlar (Authors) -->
+<div class="bg-surface border border-outline-variant p-4">
+<h3 class="font-headline-sm text-headline-sm text-primary mb-4 uppercase">Yazarlar</h3>
+<div class="flex flex-col gap-4">
+<div class="flex items-center gap-3 cursor-pointer group">
+<img class="w-12 h-12 rounded-full object-cover border-2 border-transparent group-hover:border-secondary transition-all" data-alt="A professional headshot of a middle-aged male journalist with glasses, wearing a sharp navy suit against a plain light grey background. Traditional newspaper columnist portrait style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDqqBLFpvwHhSPU62XtyfDJVksKjTzu8y9wNhiG6jb1fNBYGfSS8i6sZljd57o-p3CFgPqk36lXB61y3u6BpXKG8B4HibP4UDGx6yRVnvYUcTDt2hzxNQaTCHa2zX1HD6co-ZYft1CF34N0fpKehr2nm1RuRKaToB038FqSbKQ9HR_c64IsabpP25mDn9bzYMsUkktNwRJOPj-xR3qezV4c6OmX1CILSUz5W0wua7S2OfXb9ahNdJGdDc92LbAd4ghh9nh1IDYeb4c"/>
+<div>
+<span class="font-label-caps text-label-caps text-primary">AHMET YILMAZ</span>
+<h4 class="font-body-md text-body-md text-on-surface group-hover:underline">Seçim ekonomisi ve beklentiler</h4>
+</div>
+</div>
+<div class="flex items-center gap-3 cursor-pointer group">
+<img class="w-12 h-12 rounded-full object-cover border-2 border-transparent group-hover:border-secondary transition-all" data-alt="A professional headshot of a female writer with dark hair, wearing a white blouse against a plain light grey background. Authoritative and approachable newspaper columnist portrait." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDh7yiKUTbkAidbPKuZd_49PRLFz6RxcnM0h5lfZqQpFI2No7cy1JVSj-qembDZ_8mS2zaQU6K5e4k7pn9u3CfcWLYLhJBQTPFKvw15f9zMtENrxvyyfukeVbovKxVH6gnJslOYVRRwR2wB9lGNAnnFIjR8ZGC9-wCUno4oUViq4JpEW9v00BvavkxS2MBOIrgWw8CG8xDmFUcTNlsWvXzTJ1nNPpNE6VIdz0Bt_48RMJifhGuCCv0M2zQQWsq51l2pkuiB4t8aQ10"/>
+<div>
+<span class="font-label-caps text-label-caps text-primary">AYŞE KAYA</span>
+<h4 class="font-body-md text-body-md text-on-surface group-hover:underline">Ortadoğu'da yeni denklem</h4>
+</div>
+</div>
+</div>
+</div>
+</aside>
+</main>
+<!-- Footer -->
+<footer class="bg-primary dark:bg-on-primary-fixed w-full mt-section-gap py-12 px-gutter border-t border-primary-fixed-dim">
+<div class="max-w-container-max mx-auto flex flex-col items-center gap-6">
+<h2 class="font-headline-lg text-headline-lg text-on-primary font-extrabold tracking-tighter">HABER PORTAL</h2>
+<nav class="flex flex-wrap justify-center gap-4">
+<a class="font-body-md text-body-md text-surface-variant dark:text-outline-variant hover:text-white hover:underline transition-all" href="#">Künye</a>
+<a class="font-body-md text-body-md text-surface-variant dark:text-outline-variant hover:text-white hover:underline transition-all" href="#">İletişim</a>
+<a class="font-body-md text-body-md text-surface-variant dark:text-outline-variant hover:text-white hover:underline transition-all" href="#">Kullanım Koşulları</a>
+<a class="font-body-md text-body-md text-surface-variant dark:text-outline-variant hover:text-white hover:underline transition-all" href="#">Gizlilik Politikası</a>
+<a class="font-body-md text-body-md text-surface-variant dark:text-outline-variant hover:text-white hover:underline transition-all" href="#">RSS</a>
+</nav>
+<p class="font-body-md text-body-md text-surface-variant opacity-70 mt-4">
+                © 2024 Haber Portal - Tüm Hakları Saklıdır.
+            </p>
+</div>
+</footer>
+</body></html>

@@ -55,6 +55,7 @@ class User extends Authenticatable
     {
         static::created(function ($user) {
             if (!$user->roles()->count()) {
+                \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'User']);
                 $user->assignRole('User');
             }
         });
