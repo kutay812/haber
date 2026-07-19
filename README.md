@@ -80,7 +80,6 @@ Bu proje, açık kaynak dünyasındaki en iyi pratikler ve **OWASP standartları
 - SQL Injection (SQLi) koruması için sadece **Prepared Statements** ve Eloquent kullanılmıştır.
 - Tüm çıktı işlemlerinde **Reflected & Stored XSS** koruması (HTML escaping) aktiftir.
 - Form isteklerinin tamamı **CSRF (Cross-Site Request Forgery)** token'ları ile korunmaktadır.
-- Hassas `.env` verileri ve `storage/logs/` klasörleri izole edilmiştir ve asla repoya yüklenmez.
 
 ---
 *Geliştirme veya destek talepleriniz için Issues sekmesinden kayıt açabilirsiniz.* 🚀
